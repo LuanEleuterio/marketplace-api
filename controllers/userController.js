@@ -12,11 +12,13 @@ const userController = {
 
             const user = await User.create(req.body)
 
+            const token = await generateToken({id: user.id})
+
             user.password = undefined
 
-            return res.send(user)
+            return res.send({user, token})
         } catch(err){
-            return res.status(400).send({error: "Registration failed"})
+            return res.send({error: "Registration failed"})
         }
     }
 }

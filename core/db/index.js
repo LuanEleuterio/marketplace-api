@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 mongoose.connect(
     '',
-    { useNewUrlParser: true, useUnifiedTopology: true },
+    { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
 )
 mongoose.Promise = global.Promise
 

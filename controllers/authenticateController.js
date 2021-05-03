@@ -21,11 +21,7 @@ const authenticateController = {
         const token = await generateToken({id: user.id})
 
         res.send({user, token})
-    },
-    tokenVerify: (req, res, next) => {
-        res.status(200).send({message: 'ok', id: req.userId})
     }
 } 
-
 
 module.exports = authenticateController

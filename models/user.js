@@ -1,4 +1,4 @@
-const mongoose = require('../db/index')
+const mongoose = require('../core/db/index')
 const bcrypt = require('bcryptjs')
 
 const UserSchema = new mongoose.Schema({
@@ -7,8 +7,40 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
     email:{
+        unique: true,
         type: String,
         required: true
+    },
+    document:{
+        unique: true,
+        type: String,
+        required: true
+    },
+    address:{
+        type: Object,
+        required: true,
+        street:{
+            type: String,
+            required: true
+        },
+        number:{
+            type: String,
+            required: true
+        },
+        city:{
+            type: String,
+            required: true
+        },
+        state:{
+            type: String,
+            required: true,
+            maxLength: 2
+        },
+        postCode:{
+            type: String,
+            required: true,
+            maxlength: 8
+        }
     },
     password:{
         type: String,
