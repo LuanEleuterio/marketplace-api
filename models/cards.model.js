@@ -1,11 +1,11 @@
-const mongoose = require('../core/db/index')
+const mongoose = require('../core/services/db/mongo.db')
 
 const CardsSchema = new mongoose.Schema({
     creditCardId: {
         type: String,
         required: true
     },
-    lastFourNumber: {
+    last4CardNumber: {
         type: String,
         required: true
     },

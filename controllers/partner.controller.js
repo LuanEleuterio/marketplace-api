@@ -1,7 +1,9 @@
-const api = require("../core/apiJuno")
-const Partner = require('../models//partner')
+const api = require("../core/api")
 const generateToken = require('../core/generateToken')
 const configAuth = require('../config/auth.json')
+
+const Partner = require('../models/partner.model')
+const Product = require('../models/products.model')
 
 const partnerController = {
     register: async (req, res, next) => {
@@ -13,7 +15,7 @@ const partnerController = {
         const config = {
             apiVersion: `${configAuth.apiVersion}`,
             resourceToken: `${configAuth.privateToken}`,
-            authorization: `Bearer ${configAuth.token}`
+            authorization: `Bearer ${configAuth.authentication.token}`
         }
 
         partnerData.type = 'PAYMENT'
@@ -54,7 +56,18 @@ const partnerController = {
         } catch(err){
             return res.status(403).send(err)
         }
-    }
+    },
+    createProduct: async (req, res, next) => {
+
+        req.body.partnerId = req.userId
+
+        try{   
+            const product = await Product.create(req.body)
+            return res.status(200).send({message: "Product created!", product})
+        } catch(err){
+            return res.status(403).send(err)
+        }
+    },
 }
 
 module.exports = partnerController

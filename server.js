@@ -1,11 +1,9 @@
 const express = require("express");
-const cors = require("cors");
 const app = express();
-
-//app.use(cors());
+require("dotenv").config()
 
 app.use(express.json());
-require("./routes/index")(app);
+require("./routes/index.router")(app);
 
 app.listen(8080, function () {
     console.log("CORS-enabled web server listening on port 8080");

@@ -1,4 +1,4 @@
-const mongoose = require('../core/db/index')
+const mongoose = require('../core/services/db/mongo.db')
 
 const PaymentSchema = new mongoose.Schema({
     transactionId:{
@@ -6,10 +6,10 @@ const PaymentSchema = new mongoose.Schema({
         required: true
     },
     installments:{
-        type: number,
+        type: Number,
         required: true
     },
-    payment:{
+    payment:[{
         type: Object,
         id:{
             type: String,
@@ -27,6 +27,10 @@ const PaymentSchema = new mongoose.Schema({
             type: Number,
             required: true
         },
+        fee:{
+            type: Number,
+            required: true
+        },
         type:{
             type: String,
             required: true
@@ -35,10 +39,10 @@ const PaymentSchema = new mongoose.Schema({
             type: String,
             required: true
         }        
-    },
-    idCustomer:{
-        type: String,
-        required: true
+    }],
+    customer:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     createdAt:{
         type: Date,

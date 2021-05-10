@@ -1,4 +1,4 @@
-const mongoose = require('../core/db/index')
+const mongoose = require('../core/services/db/mongo.db')
 const bcrypt = require('bcryptjs')
 
 const PartnerSchema = new mongoose.Schema({
@@ -34,6 +34,14 @@ const PartnerSchema = new mongoose.Schema({
     },
     businessArea:{
         type: Number,
+        required: true
+    },
+    businessDescription:{
+        type: String,
+        required: true
+    },
+    linesOfBusiness:{
+        type: String,
         required: true
     },
     address:{

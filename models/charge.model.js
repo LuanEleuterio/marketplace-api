@@ -1,4 +1,4 @@
-const mongoose = require('../core/db/index')
+const mongoose = require('../core/services/db/mongo.db')
 
 const ChargeSchema = new mongoose.Schema({
     id:{
@@ -33,16 +33,13 @@ const ChargeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    details:{
-        type: Object,
-        partnerResource:{
-            type: String,
-            required: true
-        },
-        idCustomer:{
-            type: String,
-            required: true
-        },
+    customer:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    product:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
     },
     createdAt:{
         type: Date,

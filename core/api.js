@@ -1,16 +1,14 @@
 const axios = require("axios")
 
-module.exports = async (method, url, data = {}, config = {}) => {
+module.exports = async (method, baseUrl, endpoint, data = {}, config = {}) => {
     let header = {}
 
     config?.apiVersion    ? header["X-Api-Version"] = config.apiVersion : null
     config?.resourceToken ? header["X-Resource-Token"] = config.resourceToken : null
     config?.authorization ? header["Authorization"] = config.authorization : null
 
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
     const request = await axios.create({
-        baseURL: `https://sandbox.boletobancario.com/api-integration`,
+        baseURL: baseUrl,
         headers: header
     })
 
@@ -25,7 +23,7 @@ module.exports = async (method, url, data = {}, config = {}) => {
         default: instance = request.get;
     }
 
-    return instance(url, data, config)
+    return instance(endpoint, data, config)
     .catch(err => {
         return err.response
     })

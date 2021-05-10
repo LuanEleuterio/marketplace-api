@@ -1,4 +1,4 @@
-const mongoose = require('../core/db/index')
+const mongoose = require('../core/services/db/mongo.db')
 const bcrypt = require('bcryptjs')
 
 const UserSchema = new mongoose.Schema({
@@ -42,6 +42,10 @@ const UserSchema = new mongoose.Schema({
             maxlength: 8
         }
     },
+    cards: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Cards'
+    }], 
     password:{
         type: String,
         required: true,
@@ -50,6 +54,19 @@ const UserSchema = new mongoose.Schema({
     createdAt:{
         type: Date,
         default: Date.now
+    },
+    updatedAt:{
+        type: Date
+    },
+    deletedAt:{
+        type: Date
+    },
+    deleted:{
+        type: Boolean,
+        default: false
+    },
+    status:{
+        type: String
     }
 })
 
