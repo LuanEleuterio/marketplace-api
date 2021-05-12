@@ -36,10 +36,6 @@ const PartnerSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    businessDescription:{
-        type: String,
-        required: true
-    },
     linesOfBusiness:{
         type: String,
         required: true

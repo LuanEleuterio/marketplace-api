@@ -5,5 +5,6 @@ module.exports = (app) => {
     app.post("/register-user", UserController.register);
     app.post("/cancel-card", authMiddleware, UserController.cancelCard);
     app.get("/user", authMiddleware, UserController.getUser);
-   
+    app.get("/orders", authMiddleware, UserController.getOrders);
+    app.get("/cards", authMiddleware, UserController.getCards);
 };

@@ -9,9 +9,10 @@ module.exports = (app) => {
     app.get("/documents",       [authMiddleware, PartnerMiddleware], financialController.getDocuments);
     app.get("/balance",         [authMiddleware, PartnerMiddleware], financialController.getBalance);
 
-    app.post("/charge",         authMiddleware, financialController.createCharge);
+    app.post("/documents",         authMiddleware, financialController.sendDocuments);
+    app.post("/order",         authMiddleware, financialController.createOrder);
     app.post("/payment",        [authMiddleware, UserMiddleware], financialController.sendPayment);
     app.post("/tokenization",   authMiddleware, financialController.cardTokenization);
 
-    app.put("/cancel-charge",   authMiddleware, financialController.cancelCharge);
+    app.put("/cancel-order",   authMiddleware, financialController.cancelOrder);
 }

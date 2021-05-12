@@ -8,11 +8,17 @@ const interface = {
     getBusiness: async () =>{
         return gateway.getBusiness()
     },
-    getDocuments: async () =>{
-        return gateway.getDocuments()
+    createAccount: async (data) =>{
+        return gateway.createAccount(data)
     },
     getBalance: async () =>{
         return gateway.getBalance()
+    },
+    getDocuments: async () =>{
+        return gateway.getDocuments()
+    },
+    sendDocuments: async (data) =>{
+        return gateway.sendDocuments(data)
     },
     createCharge: async (data) =>{
         return gateway.createCharge(data)

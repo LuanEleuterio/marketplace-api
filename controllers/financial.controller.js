@@ -5,6 +5,7 @@ const Partner = require('../models/partner.model')
 const Product = require('../models/products.model')
 const Charge = require('../models/charge.model')
 const Payment = require('../models/payment.model')
+const Order = require('../models/order.model')
 
 //Helpers
 const orderHelper = require('../helpers/order.helper')
@@ -37,11 +38,19 @@ const financialController = {
             return res.send(err)
         }
     },
+    sendDocuments: async (req, res, next) => {
+        try{
+            let response = await interface.sendDocuments(req.body.documentId)
+            return res.send(response)
+        } catch(err){
+            return res.send(err)
+        }
+    },
     getBalance: async (req, res, next) => {
         const response = await interface.getBalance()
         res.send(response)
     },
-    createCharge: async (req, res, next) => {
+    createOrder: async (req, res, next) => {
         const data = {}
         const orderId = await orderHelper.createOrder()
 
@@ -69,6 +78,7 @@ const financialController = {
             await orderHelper.updateOrder(data)
 
             if(req.body.paymentType === "CREDIT_CARD"){
+                req.body.user = user
                 req.body.chargeId = charge.id
                 req.orderId = orderId
                 financialController.sendPayment(req)
@@ -79,10 +89,11 @@ const financialController = {
             return res.send(err)
         }
     },
-    cancelCharge: async (req, res, next) =>{
+    cancelOrder: async (req, res, next) =>{
         const data = {}
         try{
-            const response = await interface.cancelCharge(req.body.chargeId)
+            const order = await Order.findOne({_id: req.body.orderId}).populate('charge')
+            const response = await interface.cancelCharge(order.charge.id)
             
             if(response.status >= 400){
                 return res.send({response: response})
@@ -96,17 +107,23 @@ const financialController = {
             data.status = "CANCELED"
             await orderHelper.updateOrder(data)
 
-            return res.send({message: "Charge canceled!"})
+            return res.send({message: "Order canceled!"})
         }catch(err){
             return res.send(err)
         }
     },
     sendPayment: async (req, res, next) => {
         const data = {}
-      
+        let user 
+
         try{
             const card = await Cards.findOne({_id: req.body.cardId})
-            const user = await User.findOne({_id: req.userId})
+
+            if(req?.orderId){
+                user = req.body.user
+            }else{
+                user = await User.findOne({_id: req.userId})
+            }
 
             data.body = req.body
             data.card = card
@@ -125,7 +142,7 @@ const financialController = {
             await orderHelper.updateOrder(data)
 
             // Retorno sem res.send pois a sendPayment foi chamada pela createCharge
-            if(req.orderId) return
+            if(req?.orderId) return
             
             return res.send(payment)   
         } catch(err){

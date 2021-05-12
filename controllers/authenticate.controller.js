@@ -15,10 +15,10 @@ const authenticateController = {
         }
 
         if(!user){
-            return res.status(400).send({error: 'User not found'})
+            return res.status(400).send({message: 'User not found', error: true})
         }
         if(!await bcrypt.compare(password, user.password)){
-            return res.status(400).send({error: 'User or password incorret'})
+            return res.status(400).send({message: 'User or password incorret', error: true})
         }
 
         user.password = undefined
@@ -37,8 +37,8 @@ const authenticateController = {
         }
 
         const token = await generateToken({id: user.id, userOrPartner: userOrPartner})
-
-        res.send({user, token})
+        
+        res.send({user, token, type: userOrPartner})
     }
 } 
 

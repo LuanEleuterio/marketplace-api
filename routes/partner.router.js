@@ -5,4 +5,5 @@ const PartnerMiddleware = require("../middlewares/authPartner.middleware")
 module.exports = (app) => {
     app.post("/register-partner", PartnerController.register);
     app.post("/product", [authMiddleware, PartnerMiddleware], PartnerController.createProduct);
+    app.get("/list-products", PartnerController.getProducts);
 };

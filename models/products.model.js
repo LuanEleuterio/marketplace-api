@@ -21,7 +21,7 @@ const ProductSchema = new mongoose.Schema({
         type: Boolean,
         required: true
     },
-    partnerId:{
+    partner:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Partner",
         required: true

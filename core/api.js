@@ -1,15 +1,10 @@
 const axios = require("axios")
 
 module.exports = async (method, baseUrl, endpoint, data = {}, config = {}) => {
-    let header = {}
-
-    config?.apiVersion    ? header["X-Api-Version"] = config.apiVersion : null
-    config?.resourceToken ? header["X-Resource-Token"] = config.resourceToken : null
-    config?.authorization ? header["Authorization"] = config.authorization : null
 
     const request = await axios.create({
         baseURL: baseUrl,
-        headers: header
+        headers: config
     })
 
     let instance;
