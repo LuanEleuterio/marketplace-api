@@ -17,8 +17,9 @@ const CardsSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    idCustomer:{
-        type: String,
+    customer:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     createdAt:{

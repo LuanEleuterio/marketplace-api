@@ -8,10 +8,9 @@ const authHelper = {
     get: async () => {  
         let token
         let dateNow = new Date()
-        let dateAt = Date.now()
+
         try{
             const auth = await Auth.findOne({id: "1"})
-            //console.log("auth", auth)
 
             if(!auth){
                 token = await getAuth()
@@ -27,6 +26,7 @@ const authHelper = {
                 token = getAuth()
                 token.expires_milli = dateNow.setHours(dateNow.getHours() + 21)
                 token.expires_date = token.expires_milli
+                token.updatedAt = dateNow;
                 await Auth.updateOne({id:'1'},token, function(err, res) {
                     if (err) res.send(err)
                 })
@@ -54,7 +54,6 @@ async function getAuth(){
         body,
         config
     )
-    console.log("getAuth HELPER", token.data)
     return token.data
 }
 

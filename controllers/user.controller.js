@@ -81,9 +81,9 @@ const userController = {
         return res.send(orders)
     },
     getCards: async (req, res, next) => {
-        const cards = await Cards.find({ idCustomer: req.userId },function (err, res) {
+        const cards = await Cards.find({ customer: req.userId },function (err, res) {
             if (err) res.status(400).send({error: err,message: "Cards not found!"});
-        })
+        }).populate("customer", {_id: 1, name: 1, address: 1})
 
         return res.send(cards)
     }
