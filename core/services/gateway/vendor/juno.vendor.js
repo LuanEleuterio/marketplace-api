@@ -3,15 +3,18 @@ const configAuth = require('../../../../config/auth.json')
 
 //Helpers
 const financialHelper = require('../../../../helpers/financial.helper')
+const authHelper = require('../../../../helpers/auth.helper')
 
 //Config
 const baseUrl = 'https://sandbox.boletobancario.com/api-integration'
 
 const junoGateway = {
     getBanks: async (req, res, next) => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
 
         try{
             let request = await api("GET", baseUrl, "/data/banks", {}, config)
@@ -21,9 +24,11 @@ const junoGateway = {
         }
     },
     getBusiness: async (req, res, next) => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
 
         try{
             let request = await api("GET", baseUrl, "/data/business-areas", {}, config)
@@ -33,10 +38,12 @@ const junoGateway = {
         }
     },
     getBalance: async () => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
         
         try{
             let request = await api("GET", baseUrl, "/balance", {}, config)
@@ -46,10 +53,12 @@ const junoGateway = {
         }
     },
     getDocuments: async (req, res, next) => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = `A7D8EE5B8E8476FE9E694CADC65174058383B98B2484170AB20CF429643F3482`
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
         
         try{
             let request = await api("GET", baseUrl, "/documents", {}, config)
@@ -59,10 +68,12 @@ const junoGateway = {
         }
     },
     sendDocuments: async (documentId) => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
 
         try{
             let request = await api("POST", baseUrl, `/documents/{documentId}/files`, {}, config)
@@ -72,10 +83,12 @@ const junoGateway = {
         }
     },
     createAccount: async (data) =>{
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
 
         try{
             let request = await api("POST", baseUrl, "/digital-accounts", data, config)
@@ -85,10 +98,12 @@ const junoGateway = {
         }
     },
     createCharge: async (data) => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
 
         try{
             const chargeToApi = await financialHelper.formatToSendApi(data.user, data.partner, data.product, data.body)
@@ -103,10 +118,12 @@ const junoGateway = {
         }
     },
     cancelCharge: async (chargeId) => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
 
         try{
             const request = await api("PUT", baseUrl, `/charges/${chargeId}/cancelation`, {}, config)
@@ -120,10 +137,12 @@ const junoGateway = {
         }
     },
     sendPayment: async (data) => {
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
        
         try{
             const paymentDataToApi = financialHelper.formatPayment(data.card, data.user, data.body.chargeId)
@@ -139,10 +158,12 @@ const junoGateway = {
         }
     },
     cardTokenization: async (data) => {    
+        const token = await authHelper.get()
+        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${configAuth.authentication.token}`
+        config['Authorization'] = `Bearer ${token}`
 
         try{
             let request = await api("POST", baseUrl, "/credit-cards/tokenization", data, config)
