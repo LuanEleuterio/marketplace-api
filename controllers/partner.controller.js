@@ -3,6 +3,7 @@ const generateToken = require('../core/generateToken')
 //Models
 const Partner = require('../models/partner.model')
 const Product = require('../models/products.model')
+const Orders = require('../models/order.model')
 
 //Services
 const interface = require('../core/services/gateway/interface')
@@ -78,7 +79,18 @@ const partnerController = {
     getPartner: async (req, res, next) => {
         const partner  = await Partner.findOne({_id: req.userId})
         res.json(partner)
-    }
+    },
+    getOrders: async (req, res, next) => {
+        const orders = await Orders.find({ partner: req.userId },function (err, res) {
+                if (err) res.status(400).send({error: err,message: "Orders not found!"});
+            }
+        ).populate("product")
+        .populate("payment")
+        .populate("charge")
+        .populate("customer", {name: 1, address: 1, phone: 1, email: 1});
+
+        return res.send(orders)
+    },
 }
 
 module.exports = partnerController

@@ -4,6 +4,7 @@ const PartnerMiddleware = require("../middlewares/authPartner.middleware")
 
 module.exports = (app) => {
     app.get("/partner", authMiddleware, PartnerController.getPartner);
+    app.get("/partner/orders", authMiddleware, PartnerController.getOrders);
     app.get("/partner/products", PartnerController.getProducts);
     app.get("/partner/product/:productId", PartnerController.getProduct);
 
