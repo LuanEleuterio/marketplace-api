@@ -5,6 +5,9 @@ const User = require("../models/user.model");
 const Cards = require("../models/cards.model");
 const Orders = require("../models/order.model");
 
+//Helpers
+const userHelper = require('../helpers/user.helper')
+
 const userController = {
     register: async (req, res, next) => {
         const { email } = req.body;
@@ -13,10 +16,13 @@ const userController = {
             if (await User.findOne({ email })) {
                 return res.status(400).send({ error: "User already exists" });
             }
+
             const user = await User.create(req.body);
             const token = await generateToken({ id: user.id });
 
             user.password = undefined;
+
+            await userHelper.sendEmailWelcome(req.body)
 
             return res.send({ user, token });
         } catch (err) {
@@ -48,9 +54,8 @@ const userController = {
         }
     },
     cancelCard: async (req, res, next) => {
-        const cardId = req.body.cardId;
+        const cardId = req.params.cardId;
         const userId = req.userId;
-
         try {
             await User.updateOne(
                 { _id: userId },
@@ -64,7 +69,7 @@ const userController = {
                 if (err) return res.send(err);
             });
 
-            return res.send({ message: "Cartão removido!" });
+            return res.json({ message: "Cartão removido!" });
         } catch (err) {
             return res.send({ err });
         }

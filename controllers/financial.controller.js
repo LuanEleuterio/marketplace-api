@@ -11,12 +11,12 @@ const Order = require('../models/order.model')
 const orderHelper = require('../helpers/order.helper')
 
 //interface
-const interface = require('../core/services/gateway/interface')
+const gateway = require('../core/services/gateway/interface')
 
 const financialController = {
     getBanks: async (req, res, next) => {
         try{
-            let response = await interface.getBanks()
+            let response = await gateway.getBanks()
             return res.send(response)
         } catch(err){
             return res.send(err)
@@ -24,7 +24,7 @@ const financialController = {
     },
     getBusiness: async (req, res, next) => {
         try{
-            let response = await interface.getBusiness()
+            let response = await gateway.getBusiness()
             return res.send(response)
         } catch(err){
             return res.send(err)
@@ -32,7 +32,7 @@ const financialController = {
     },
     getDocuments: async (req, res, next) => {
         try{
-            let response = await interface.getDocuments()
+            let response = await gateway.getDocuments()
             return res.send(response)
         } catch(err){
             return res.send(err)
@@ -40,14 +40,14 @@ const financialController = {
     },
     sendDocuments: async (req, res, next) => {
         try{
-            let response = await interface.sendDocuments(req.body.documentId)
+            let response = await gateway.sendDocuments(req.body.documentId)
             return res.send(response)
         } catch(err){
             return res.send(err)
         }
     },
     getBalance: async (req, res, next) => {
-        const response = await interface.getBalance()
+        const response = await gateway.getBalance()
         res.send(response)
     },
     createOrder: async (req, res, next) => {
@@ -64,7 +64,7 @@ const financialController = {
             data.partner = partner
             data.user = user
 
-            const response = await interface.createCharge(data)
+            const response = await gateway.createCharge(data)
 
             const charge = await Charge.create(response)
             
@@ -92,8 +92,8 @@ const financialController = {
     cancelOrder: async (req, res, next) =>{
         const data = {}
         try{
-            const order = await Order.findOne({_id: req.body.orderId}).populate('charge')
-            const response = await interface.cancelCharge(order.charge.id)
+            const order = await Order.findOne({_id: req.params.orderId}).populate('charge')
+            const response = await gateway.cancelCharge(order.charge.id)
             
             if(response.status >= 400){
                 return res.send({response: response})
@@ -103,7 +103,7 @@ const financialController = {
                 if (err) res.send(err)
             })
 
-            data.orderId = req?.body.orderId ? req.body.orderId : req.orderId
+            data.orderId = req?.params.orderId ? req.params.orderId : req.orderId
             data.status = "CANCELED"
             await orderHelper.updateOrder(data)
 
@@ -129,7 +129,7 @@ const financialController = {
             data.card = card
             data.user = user
 
-            const response = await interface.sendPayment(data)
+            const response = await gateway.sendPayment(data)
             const payment = await Payment.create(response)
 
             await Charge.updateOne({id:data.body.chargeId},{status: "PAID"}, function(err, res) {
@@ -154,7 +154,7 @@ const financialController = {
         const userId = req.userId
         
         try{
-            const response = await interface.cardTokenization(req.body)
+            const response = await gateway.cardTokenization(req.body)
 
             response.idCustomer = userId
             const card = await Cards.create(response)

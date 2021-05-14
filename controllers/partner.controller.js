@@ -1,10 +1,10 @@
-const api = require("../core/api")
 const generateToken = require('../core/generateToken')
-const configAuth = require('../config/auth.json')
 
+//Models
 const Partner = require('../models/partner.model')
 const Product = require('../models/products.model')
 
+//Services
 const interface = require('../core/services/gateway/interface')
 
 const partnerController = {
@@ -19,13 +19,13 @@ const partnerController = {
 
         try{
             if(await Partner.findOne({email})){
-                return res.status(400).send({error: "Partner already exists"})
+                return res.status(400).json({error: "Partner already exists"})
             }
 
             let request = await interface.createAccount(partnerData)
 
             if(errors.indexOf(request.status) > -1){
-                return res.status(request.status).send(request.data)
+                return res.status(request.status).json(request.data)
             }
 
             partnerData.junoAccount = {
@@ -48,9 +48,9 @@ const partnerController = {
 
             partner.password = undefined
 
-            return res.send({partner, token})
+            return res.json({partner, token})
         } catch(err){
-            return res.status(403).send(err)
+            return res.status(403).json(err)
         }
     },
     createProduct: async (req, res, next) => {
@@ -60,14 +60,24 @@ const partnerController = {
         
         try{   
             const product = await Product.create(req.body)
-            return res.status(200).send({message: "Product created!", product})
+            return res.status(200).json({message: "Product created!", product})
         } catch(err){
-            return res.status(403).send(err)
+            return res.status(403).json(err)
         }
     },
     getProducts: async (req, res, next) => {
         const products  = await Product.find().populate('partner', {_id: 1, name: 1})
         res.send(products)
+    },
+    getProduct: async (req, res, next) => {
+        const product  = await Product.findOne({_id: req.params.productId})
+        .populate('partner', {_id: 1, name: 1})
+
+        return res.json(product)
+    },
+    getPartner: async (req, res, next) => {
+        const partner  = await Partner.findOne({_id: req.userId})
+        res.json(partner)
     }
 }
 

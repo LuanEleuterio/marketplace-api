@@ -3,7 +3,10 @@ const authMiddleware = require("../middlewares/auth.middleware")
 const PartnerMiddleware = require("../middlewares/authPartner.middleware")
 
 module.exports = (app) => {
-    app.post("/register-partner", PartnerController.register);
+    app.get("/partner", authMiddleware, PartnerController.getPartner);
+    app.get("/partner/products", PartnerController.getProducts);
+    app.get("/partner/product/:productId", PartnerController.getProduct);
+
+    app.post("/partner/register", PartnerController.register);
     app.post("/product", [authMiddleware, PartnerMiddleware], PartnerController.createProduct);
-    app.get("/list-products", PartnerController.getProducts);
 };

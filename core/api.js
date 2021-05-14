@@ -20,7 +20,7 @@ module.exports = async (method, baseUrl, endpoint, data = {}, config = {}) => {
 
     return instance(endpoint, data, config)
     .catch(err => {
-        return err.response
+        return err
     })
 
 }
