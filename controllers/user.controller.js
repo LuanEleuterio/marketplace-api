@@ -24,7 +24,7 @@ const userController = {
 
             await userHelper.sendEmailWelcome(req.body)
 
-            return res.send({ user, token });
+            return res.json({ userId: user._id, token });
         } catch (err) {
             return res
                 .status(400)

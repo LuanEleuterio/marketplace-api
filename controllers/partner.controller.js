@@ -49,7 +49,7 @@ const partnerController = {
 
             partner.password = undefined
 
-            return res.json({partner, token})
+            return res.json({partnerId: partner._id, token})
         } catch(err){
             return res.status(403).json(err)
         }

@@ -23,12 +23,13 @@ const authHelper = {
             let dateExpireToken = new Date(parseInt(auth.expires_milli))
 
             if(dateNow.toLocaleString() > dateExpireToken.toLocaleString()){
-                token = getAuth()
+                token = await getAuth()
                 token.expires_milli = dateNow.setHours(dateNow.getHours() + 21)
                 token.expires_date = token.expires_milli
                 token.updatedAt = dateNow;
+
                 await Auth.updateOne({id:'1'},token, function(err, res) {
-                    if (err) res.send(err)
+                    if (err) console.log(err)
                 })
                 return token.access_token
             }

@@ -47,8 +47,12 @@ const financialController = {
         }
     },
     getBalance: async (req, res, next) => {
-        const response = await gateway.getBalance()
-        res.send(response)
+        const partner = await Partner.findOne({_id: req.userId})
+
+        let resourceToken = partner.junoAccount.resourceToken
+
+        const response = await gateway.getBalance(resourceToken)
+        res.json(response)
     },
     createOrder: async (req, res, next) => {
         const data = {}

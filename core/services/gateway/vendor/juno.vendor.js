@@ -37,12 +37,12 @@ const junoGateway = {
             return err
         }
     },
-    getBalance: async () => {
+    getBalance: async (resourceToken) => {
         const token = await authHelper.get()
         
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
-        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['X-Resource-Token'] = resourceToken
         config['Authorization'] = `Bearer ${token}`
         
         try{

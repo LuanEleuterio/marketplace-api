@@ -36,9 +36,9 @@ const authenticateController = {
             user.monthlyIncomeOrRevenue = undefined
         }
 
-        const token = await generateToken({id: user.id, userOrPartner: userOrPartner})
+        const token = await generateToken({id: user._id, userOrPartner: userOrPartner})
         
-        res.send({user, token, type: userOrPartner})
+        res.send({userId: user._id, token, type: userOrPartner})
     }
 } 
 

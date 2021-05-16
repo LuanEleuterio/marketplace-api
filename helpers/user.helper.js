@@ -5,7 +5,6 @@ const {stringify} = require('flatted')
 
 const userHelper = {
     sendEmailWelcome: async (user) => {
-        console.log(user)
         try{
             const data =  {
                 personalizations: [{
