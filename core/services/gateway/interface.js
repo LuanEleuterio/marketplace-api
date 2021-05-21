@@ -14,8 +14,8 @@ const interface = {
     getBalance: async (resourceToken) =>{
         return gateway.getBalance(resourceToken)
     },
-    getDocuments: async () =>{
-        return gateway.getDocuments()
+    getDocuments: async (resourceToken) =>{
+        return gateway.getDocuments(resourceToken)
     },
     sendDocuments: async (data) =>{
         return gateway.sendDocuments(data)

@@ -6,7 +6,7 @@ const Product = require('../models/products.model')
 const Orders = require('../models/order.model')
 
 //Services
-const interface = require('../core/services/gateway/interface')
+const gateway = require('../core/services/gateway/interface')
 
 const partnerController = {
     register: async (req, res, next) => {
@@ -15,7 +15,7 @@ const partnerController = {
         const password = partnerData.password
         const errors = [400,401,402,403,404,500,501,502,503,504]
 
-        partnerData.type = 'PAYMENT'
+
         delete partnerData.password
 
         try{
@@ -23,7 +23,7 @@ const partnerController = {
                 return res.status(400).json({error: "Partner already exists"})
             }
 
-            let request = await interface.createAccount(partnerData)
+           /* let request = await gateway.createAccount(partnerData)
 
             if(errors.indexOf(request.status) > -1){
                 return res.status(request.status).json(request.data)
@@ -38,20 +38,54 @@ const partnerController = {
                 resourceToken: request.data.resourceToken,
                 createdAt: request.data.createdOn
             }
-
+            */
             delete partnerData.type
 
             partnerData.password = password
 
             const partner = await Partner.create(partnerData)
 
-            const token = await generateToken({id: partner.id})
+            const token = await generateToken({id: partner.id, userOrPartner: "PARTNER"})
 
             partner.password = undefined
 
             return res.json({partnerId: partner._id, token})
         } catch(err){
             return res.status(403).json(err)
+        }
+    },
+    updatePartner: async (req, res, next) =>{
+        let data
+        try{
+            const partner = await Partner.findOne({_id: req.userId}, {_id: 0, createdAt: 0, junoAccount: 0, __v: 0})
+            if(!partner) {
+                return res.status(404).json({message:"Partner not found"})
+            }
+
+            data = {
+                type: "PAYMENT",
+                ...partner._doc,
+                ...req.body,
+            }
+
+            let request = await gateway.createAccount(data)
+
+            data.junoAccount = {
+                idAccount: request.data.id,
+                type: request.data.type,
+                personType: request.data.personType,
+                status: request.data.status,
+                accountNumber: request.data.accountNumber,
+                resourceToken: request.data.resourceToken,
+                createdAt: request.data.createdOn
+            }
+
+            await Partner.updateOne({_id: req.userId}, data, function(err, res) {
+                if (err) res.json(err)
+            })
+            return res.status(201).json({message: "Conta Digital criada!"})
+        }catch(err){
+            res.json(err.stack)
         }
     },
     createProduct: async (req, res, next) => {
@@ -75,6 +109,21 @@ const partnerController = {
         .populate('partner', {_id: 1, name: 1})
 
         return res.json(product)
+    },
+    collectionProducts: async (req, res, next) => {
+        let productsId = []
+        for( let product of req.body.products){
+            productsId.push(product.productId)
+        }
+        
+        try{
+            const product  = await Product.find({_id: {$in: productsId }})
+            .populate('partner', {_id: 1, name: 1})
+
+            return res.json(product)
+        }catch(err){
+           return res.json(err.stack)
+        }
     },
     getPartner: async (req, res, next) => {
         const partner  = await Partner.findOne({_id: req.userId})

@@ -18,31 +18,25 @@ const PartnerSchema = new mongoose.Schema({
     },
     document:{
         type: String,
-        required: true,
         unique: true,
     },
     birthDate:{
-        type: Date,
-        required: true
+        type: Date
     },
     monthlyIncomeOrRevenue:{
-        type: Number,
-        required: true
+        type: Number
     },
     motherName:{
         type: String
     },
     businessArea:{
-        type: Number,
-        required: true
+        type: Number
     },
     linesOfBusiness:{
-        type: String,
-        required: true
+        type: String
     },
     address:{
         type: Object,
-        required: true,
         street:{
             type: String,
             required: true
@@ -68,62 +62,48 @@ const PartnerSchema = new mongoose.Schema({
     },
     bankAccount:{
         type: Object,
-        required: true,
         bankNumber:{
             type: String,
-            required: true,
             maxlength: 3
         },
         agencyNumber:{
-            type: String,
-            required: true
+            type: String
         },
         accountNumber:{
-            type: Number,
-            required: true
+            type: Number
         },
         accountType:{
-            type: String,
-            required: true
+            type: String
         },
         accountHolder:{
             type: Object,
-            required: true,
             name:{
-                type: String,
-                required: true
+                type: String
             },
             document:{
-                type: String,
-                required: true
+                type: String
             }
         }
     },
     junoAccount:{
         type: Object,
         idAccount:{
-            type: String,
-            required: true
+            type: String
         },
         type:{
-            type: String,
-            required: true
+            type: String
         },
         personType:{
-            type: String,
-            required: true
+            type: String
         },
         status:{
-            type: String,
-            required: true
+            type: String
         },
         accountNumber:{
-            type: String,
-            required: true
+            type: String
         },
         resourceToken:{
-            type: String,
-            required: true
+            type: String
         },
         createdAt:{
             type: Date

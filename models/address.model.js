@@ -1,7 +1,7 @@
 const mongoose = require('../core/services/db/mongo.db')
 const bcrypt = require('bcryptjs')
 
-const UserSchema = new mongoose.Schema({
+const AddressSchema = new mongoose.Schema({
     name:{
         type: String,
         required: true
@@ -13,17 +13,20 @@ const UserSchema = new mongoose.Schema({
     },
     document:{
         unique: true,
-        type: String
+        type: String,
+        required: true
     },
     dtnasc:{
         type: Date,
         required: true
     },
     phone:{
-        type: String
+        type: String,
+        required: true
     },
     address:{
         type: Object,
+        required: true,
         street:{
             type: String,
             required: true
@@ -81,6 +84,6 @@ UserSchema.pre('save', async function(next){
     next()
 })
 
-const User = mongoose.model('User', UserSchema)
+const Address = mongoose.model('Address', AddressSchema)
 
-module.exports = User
+module.exports = Address

@@ -13,6 +13,10 @@ const ProductSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    qtd:{
+        type: Number,
+        required: true
+    },
     img_url:{
         type: String,
         required: true

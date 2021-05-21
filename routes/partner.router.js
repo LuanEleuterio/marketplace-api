@@ -8,6 +8,8 @@ module.exports = (app) => {
     app.get("/partner/products", PartnerController.getProducts);
     app.get("/partner/product/:productId", PartnerController.getProduct);
 
-    app.post("/partner/register", PartnerController.register);
+    app.post("/partner/product/collection", PartnerController.collectionProducts);
+    app.post("/partner", PartnerController.register);
     app.post("/product", [authMiddleware, PartnerMiddleware], PartnerController.createProduct);
+    app.put("/partner", [authMiddleware, PartnerMiddleware], PartnerController.updatePartner);
 };

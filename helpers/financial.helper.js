@@ -2,7 +2,7 @@ const financialHelper = {
     formatToSendApi: async (user, partner, product, body) => {    
         const data = {
             charge:{
-                description: product.description,
+                description: product.name,
                 amount: product.price,
                 discountAmount: "0.00",
                 paymentTypes: [
@@ -31,6 +31,7 @@ const financialHelper = {
                 address: user.address
             }
         }
+
         return data
     },
     formatToSendDB: async (user, product, paymentType, body) => {    

@@ -18,7 +18,7 @@ const userController = {
             }
 
             const user = await User.create(req.body);
-            const token = await generateToken({ id: user.id });
+            const token = await generateToken({ id: user.id, userOrPartner: "USER"});
 
             user.password = undefined;
 
@@ -30,6 +30,12 @@ const userController = {
                 .status(400)
                 .send({ error: err, message: "Registration failed" });
         }
+    },
+    updateUser: async (req, res, next) => {
+        const user = await User.updateOne({_id: req.userId}, req.body, function(err, res) {
+            if (err) res.json(err)
+        })
+        return res.json(user)
     },
     getUser: async (req, res, next) => {
         try {
@@ -71,7 +77,7 @@ const userController = {
 
             return res.json({ message: "Cartão removido!" });
         } catch (err) {
-            return res.send({ err });
+            return res.json({err});
         }
     },
     getOrders: async (req, res, next) => {
@@ -81,7 +87,8 @@ const userController = {
         ).populate("product")
         .populate("payment")
         .populate("charge")
-        .populate("partner");
+        .populate("partner", {name: 1})
+        .populate("customer", {address: 1});
 
         return res.send(orders)
     },

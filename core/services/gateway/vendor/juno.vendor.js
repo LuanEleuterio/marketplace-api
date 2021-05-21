@@ -52,12 +52,12 @@ const junoGateway = {
             return err
         }
     },
-    getDocuments: async (req, res, next) => {
+    getDocuments: async (resourceToken) => {
         const token = await authHelper.get()
         
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
-        config['X-Resource-Token'] = `A7D8EE5B8E8476FE9E694CADC65174058383B98B2484170AB20CF429643F3482`
+        config['X-Resource-Token'] = resourceToken
         config['Authorization'] = `Bearer ${token}`
         
         try{
@@ -99,7 +99,6 @@ const junoGateway = {
     },
     createCharge: async (data) => {
         const token = await authHelper.get()
-        
         const config = {}
         config['X-Api-Version'] = process.env.API_VERSION
         config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
@@ -108,10 +107,11 @@ const junoGateway = {
         try{
             const chargeToApi = await financialHelper.formatToSendApi(data.user, data.partner, data.product, data.body)
             const request = await api("POST", baseUrl, "/charges", chargeToApi, config)
-
+            
             const chargeToDB = await financialHelper.formatToSendDB(
                 data.user, data.product, data.body.paymentType, request.data._embedded.charges[0]
             )
+            
             return chargeToDB
         } catch(err){
             return err
@@ -167,6 +167,7 @@ const junoGateway = {
 
         try{
             let request = await api("POST", baseUrl, "/credit-cards/tokenization", data, config)
+          
             return request.data
         } catch(err){
             return err
