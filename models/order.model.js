@@ -6,33 +6,44 @@ const OrderSchema = new mongoose.Schema({
         ref: 'User',
         default: null
     },
-    partner:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Partner',
-        default: null
-    },
-    product:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        default: null
-    },
-    charge:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Charge',
-        default: null
-    },
-    payment:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Payment',
-        default: null
-    },
-    amount:{
-        type: Number,
-        default: 0
-    },
+    details:[{
+        partner:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Partner',
+            default: null
+        },
+        product:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
+            default: null
+        },
+        charge:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Charge',
+            default: null
+        },
+        payment:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Payment',
+            default: null
+        },
+        amount:{
+            type: Number,
+            default: 0
+        },
+        shippingValue:{
+            type: Number,
+            default: 0
+        },
+        status:{
+            type: String,
+            required: true
+        }
+    }],
     status:{
         type: String,
-        required: true
+        required: true,
+        default: "ACTIVE"
     },
     createdAt:{
         type: Date,

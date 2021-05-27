@@ -6,27 +6,25 @@ const orderHelper = {
         const data = {}
         data.status = 'PROCESSING'
 
-        try{
-            const order = await Order.create(data)
-            return order._id
-        }catch(err){
-            console.log(err)
-            return err
-        }
+        const order = await Order.create(data)
+        return order._id
     },
     updateOrder: async (data) =>{ 
         const order = {}
+        const user = {}
 
-        data?.user      ? order.customer = data.user    : null
+        data?.user      ? user.customer  = data.user    : null
         data?.partner   ? order.partner  = data.partner : null
         data?.charge    ? order.charge   = data.charge  : null
         data?.product   ? order.product  = data.product : null
         data?.payment   ? order.payment  = data.payment : null
         data?.status    ? order.status   = data.status  : null
+        data?.paymentId ? order.payment  = data.paymentId : null
         data?.amount    ? order.amount   = parseInt(data.amount)  : null
+        data?.shippingValue ? order.shippingValue  = data.shippingValue : null
 
         try{
-            await Order.updateOne({_id: data.orderId }, order)
+            await Order.updateOne({_id: data.orderId }, {$addToSet: {details: order}, customer: user.customer})
             return
         }catch(err){
             console.log(err)

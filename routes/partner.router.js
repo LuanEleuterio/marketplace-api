@@ -3,13 +3,7 @@ const authMiddleware = require("../middlewares/auth.middleware")
 const PartnerMiddleware = require("../middlewares/authPartner.middleware")
 
 module.exports = (app) => {
-    app.get("/partner", authMiddleware, PartnerController.getPartner);
-    app.get("/partner/orders", authMiddleware, PartnerController.getOrders);
-    app.get("/partner/products", PartnerController.getProducts);
-    app.get("/partner/product/:productId", PartnerController.getProduct);
-
-    app.post("/partner/product/collection", PartnerController.collectionProducts);
-    app.post("/partner", PartnerController.register);
-    app.post("/product", [authMiddleware, PartnerMiddleware], PartnerController.createProduct);
-    app.put("/partner", [authMiddleware, PartnerMiddleware], PartnerController.updatePartner);
+    app.post("/partner", PartnerController.create);
+    app.put("/partner", [authMiddleware, PartnerMiddleware], PartnerController.update);
+    app.get("/partner", authMiddleware, PartnerController.list);
 };

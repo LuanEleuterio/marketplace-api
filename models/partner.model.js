@@ -110,6 +110,16 @@ const PartnerSchema = new mongoose.Schema({
         }
 
     },
+    signUpCompleted:{
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    hasJunoAccount:{
+        type: Boolean,
+        required: true,
+        default: false
+    },
     password:{
         type: String,
         required: true,

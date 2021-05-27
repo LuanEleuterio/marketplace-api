@@ -21,9 +21,61 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    status:{
+    active:{
         type: Boolean,
-        required: true
+        required: true,
+        default: true
+    },
+    details: {
+        type: Object,
+        marca:{
+            type: String,
+            required: true
+        },
+        model:{
+            type: String,
+            required: true
+        },
+        capacity:{
+            type: String,
+            required: true
+        },
+        color:{
+            type: String,
+            required: true
+        },
+        weight:{
+            type: String,
+            required: true
+        },
+        dimension:{
+            type: Object,
+            height: {
+                type: String,
+                required: true
+            },
+            width: {
+                type: String,
+                required: true
+            },
+            comprimento: {
+                type: String,
+                required: true
+            }
+        },
+        manufacturer:{
+            type: String,
+            required: true
+        },
+        used:{
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        otherDetails:{
+            type: String,
+            required: true
+        }
     },
     partner:{
         type: mongoose.Schema.Types.ObjectId,

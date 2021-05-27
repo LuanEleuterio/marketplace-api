@@ -9,6 +9,7 @@ const Order = require('../models/order.model')
 
 //Helpers
 const orderHelper = require('../helpers/order.helper')
+const financialHelper = require('../helpers/financial.helper')
 
 //interface
 const gateway = require('../core/services/gateway/interface')
@@ -27,6 +28,9 @@ const financialController = {
                 ...partner._doc,
                 ...req.body,
             }
+            
+            delete data.signUpCompleted
+            delete data.hasJunoAccount
 
             let request = await gateway.createAccount(data)
 
@@ -40,10 +44,12 @@ const financialController = {
                 createdAt: request.data.createdOn
             }
 
+            data.hasJunoAccount = true
+
             await Partner.updateOne({_id: req.userId}, data, function(err, res) {
                 if (err) res.json(err)
             })
-            return res.status(201).json({message: "Conta Digital criada!"})
+            return res.status(201).json({message: "Conta Digital criada!", data: data})
         }catch(err){
             res.json(err.stack)
         }
@@ -96,46 +102,60 @@ const financialController = {
             return res.json(err)
         }
     },
-    createOrder: async (req, res, next) => {
+    createCharge: async (req, res, next) => {
         const data = {}
+        const payment = {
+            body:{}
+        }
         const orderId = await orderHelper.createOrder()
-
         try{
-            const product = await Product.findOne({_id: req.body.productId})
-            const partner = await Partner.findOne({_id: product.partner})
             const user = await User.findOne({_id: req.userId})
-       
-            data.body = req.body
-            data.product = product
-            data.partner = partner
-            data.user = user
 
-            const response = await gateway.createCharge(data)
+            for(let order of req.body.orders){
+                const product = await Product.findOne({_id: order.productId})
+                const partner = await Partner.findOne({_id: product.partner})
 
-            const charge = await Charge.create(response)
-            
-            data.user = user._id
-            data.charge = charge._id
-            data.partner = partner._id
-            data.product = product._id
-            data.amount = req.body.qtd
-            data.orderId = orderId
-            data.status = "PROCESSING"
-            await orderHelper.updateOrder(data)
+                data.body = req.body
+                data.body.productQtd = order.qtd
+                data.body.shippingValue = order.shippingValue
+                data.body.discountAmount = req.body.discountAmount
+                data.product = product
+                data.partner = partner
+                data.user = user
 
-            if(req.body.paymentType === "CREDIT_CARD"){
-                req.body.user = user
-                req.body.chargeId = charge.id
-                req.orderId = orderId
-                financialController.sendPayment(req)
+                const response = await gateway.createCharge(data)
+
+                if(req.body.paymentType){
+                    response.card = req.body.cardId
+                }
+
+                const charge = await Charge.create(response)
+
+                data.user = user._id
+                data.charge = charge._id
+                data.partner = partner._id
+                data.product = product._id
+                data.amount = order.qtd
+                data.shippingValue = order.shippingValue
+                data.orderId = orderId
+                data.status = "PROCESSING"
+
+                if(req.body.paymentType === 'CREDIT_CARD'){
+                    payment.user = user
+                    payment.body.chargeId = charge.id
+                    payment.orderId = orderId
+                    payment.cardId = req.body.cardId
+                    data.paymentId = await financialHelper.sendPay(payment, gateway)
+                }
+
+                await orderHelper.updateOrder(data)
             }
-
-            return res.send(charge)
+            return res.json({message: "Pedido realizado!"})
         } catch(err){
             return res.send(err)
         }
     },
-    cancelOrder: async (req, res, next) =>{
+    cancelCharge: async (req, res, next) =>{
         const data = {}
         try{
             const order = await Order.findOne({_id: req.params.orderId}).populate('charge')

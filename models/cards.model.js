@@ -26,11 +26,19 @@ const CardsSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    active:{
+        type: Boolean,
+        default: true
+    },
     createdAt:{
         type: Date,
         default: Date.now
+    },
+    deletedAt:{
+        type: Date
     }
 })
+
 
 const Cards = mongoose.model('Cards', CardsSchema)
 

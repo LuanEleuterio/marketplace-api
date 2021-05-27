@@ -6,7 +6,7 @@ const financialHelper = require('../../../../helpers/financial.helper')
 const authHelper = require('../../../../helpers/auth.helper')
 
 //Config
-const baseUrl = 'https://sandbox.boletobancario.com/api-integration'
+const baseUrl = process.env.BASE_URL_GATEWAY
 
 const junoGateway = {
     getBanks: async (req, res, next) => {
@@ -107,11 +107,9 @@ const junoGateway = {
         try{
             const chargeToApi = await financialHelper.formatToSendApi(data.user, data.partner, data.product, data.body)
             const request = await api("POST", baseUrl, "/charges", chargeToApi, config)
-            
             const chargeToDB = await financialHelper.formatToSendDB(
                 data.user, data.product, data.body.paymentType, request.data._embedded.charges[0]
             )
-            
             return chargeToDB
         } catch(err){
             return err
@@ -145,12 +143,10 @@ const junoGateway = {
         config['Authorization'] = `Bearer ${token}`
        
         try{
-            const paymentDataToApi = financialHelper.formatPayment(data.card, data.user, data.body.chargeId)
-            
+            const paymentDataToApi = await financialHelper.formatPayment(data.card, data.user, data.body.chargeId)
             let request = await api("POST", baseUrl, "/payments", paymentDataToApi, config)
-
-            const paymentDataToDB = financialHelper.formatPaymentToDB(request.data, data.user)
-
+            const paymentDataToDB = await financialHelper.formatPaymentToDB(request.data, data.user)
+            
             return paymentDataToDB
         } catch(err){
             console.log(err)

@@ -70,6 +70,11 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    signUpCompleted:{
+        type: Boolean,
+        required: true,
+        default: false
+    },
     status:{
         type: String
     }

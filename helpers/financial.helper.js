@@ -1,9 +1,15 @@
+//Models
+const Cards = require('../models/cards.model')
+const Charge = require('../models/charge.model')
+const Payment = require('../models/payment.model')
+
 const financialHelper = {
     formatToSendApi: async (user, partner, product, body) => {    
+        let productPrice = (product.price * body.productQtd) + body.shippingValue
         const data = {
             charge:{
                 description: product.name,
-                amount: product.price,
+                amount: productPrice.toFixed(2),
                 discountAmount: "0.00",
                 paymentTypes: [
                     body.paymentType
@@ -31,9 +37,9 @@ const financialHelper = {
                 address: user.address
             }
         }
-
         return data
     },
+
     formatToSendDB: async (user, product, paymentType, body) => {    
         const data = {
             id: body.id,
@@ -49,6 +55,7 @@ const financialHelper = {
         }
         return data
     },
+
     formatPayment: async (card, user, charge) => {    
         const data = {
             chargeId: charge,
@@ -63,6 +70,7 @@ const financialHelper = {
         }
         return data
     },
+
     formatPaymentToDB: async (payment, user) => {    
         let paymentArr = []
         for( let pay of payment.payments){
@@ -87,7 +95,30 @@ const financialHelper = {
         }
     
         return data
-    }     
+    },
+    
+    sendPay: async (pay, gateway) => {
+        let obj = {}
+        try{
+            const card = await Cards.findOne({_id: pay.cardId})
+
+            obj.body = pay.body
+            obj.card = card
+            obj.user = pay.user
+
+            const response = await gateway.sendPayment(obj)
+            const payment = await Payment.create(response)
+
+            await Charge.updateOne({id:obj.body.chargeId},{status: "PAID"}, function(err, res) {
+                if (err) res.send(err)
+            })
+
+            return payment._id  
+        } catch(err){
+            console.log(err)
+            return err.stack
+        }
+    }
 }
 
 module.exports = financialHelper
