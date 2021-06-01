@@ -5,5 +5,5 @@ module.exports = (app) => {
     app.get("/order/user", authMiddleware, OrderController.listByUser);
     app.get("/order/partner", authMiddleware, OrderController.listByPartner);
     app.post("/order", authMiddleware, OrderController.create);
-    app.delete("/order", authMiddleware, OrderController.cancel);
+    app.put("/order/cancel", authMiddleware, OrderController.cancel);
 };

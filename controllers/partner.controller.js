@@ -5,12 +5,12 @@ const Partner = require('../models/partner.model')
 
 const partnerController = {
     create: async (req, res, next) => {
-        const { email } = req.body
-        const partnerData = req.body
-
         try{
+            const { email } = req.body
+            const partnerData = req.body
+
             if(await Partner.findOne({email})){
-                return res.status(400).json({error: "Partner already exists"})
+                return res.status(400).json({error: "Parceiro já existe"})
             }
 
             const partner = await Partner.create(partnerData)
@@ -19,25 +19,28 @@ const partnerController = {
 
             partner.password = undefined
 
-            return res.json({partnerId: partner._id, token})
+            return res.status(201).json({partnerId: partner._id, token, error: false})
         } catch(err){
-            return res.status(403).json(err)
+            return res.status(400).json({err: err.stack, message: "Problema ao criar parceiro", error: true})
         }
     },
     update: async (req, res, next) =>{
         try{
             req.body.signUpCompleted = true
-            await Partner.updateOne({_id: req.userId}, req.body, function(err, res) {
-                if (err) res.json(err)
-            })
-            return res.status(201).json({message: "Dados alterados!"})
+            await Partner.updateOne({_id: req.userId}, req.body)
+
+            return res.status(200).json({message: "Dados alterados!", error: false})
         }catch(err){
-            res.json(err.stack)
+            return res.status(400).json({err: err.stack, message:"Problema ao atualizar produto", error: true})
         }
     },
     list: async (req, res, next) => {
-        const partner  = await Partner.findOne({_id: req.userId})
-        res.json(partner)
+        try{
+            const partner  = await Partner.findOne({_id: req.userId})
+            return res.status(200).json({partner, error: false})
+        }catch(err){
+            return  res.status(404).json({err: err.stack, message: "Problema ao procurar parceiro", error: true})
+        }
     }
 }
 

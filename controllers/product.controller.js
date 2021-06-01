@@ -10,21 +10,19 @@ const productController = {
         req.body.partner = req.userId
         try{   
             const product = await Product.create(req.body)
-            return res.status(200).json({message: "Product created!", product})
+            return res.status(201).json({message: "Product created!", product, error: false})
         } catch(err){
-            return res.status(403).json(err)
+            return res.status(400).json({err: err.stack, message: 'Problema ao tentar criar produto', error: true})
         }
     },
 
     update: async (req, res, next) => {
         const data = req.body
         try{
-            await Product.updateOne({_id: data.productId}, data, function(err, res) {
-                if (err) res.json(err)
-            })
-            res.json({message:"Produto alterado"})
+            await Product.updateOne({_id: data.productId}, data)
+            return res.status(200).json({message:"Produto alterado", error: false})
         }catch(err){
-            res.json(err.stack)
+            return res.status(400).json({error: err.stack, message:"Problema ao atualizar produto", error: true})
         }
     },
 
@@ -34,56 +32,59 @@ const productController = {
             let hasProdInOrder = await Orders.findOne({'details.product': req.params.productId})
 
             if(!hasProdInOrder){
-                await Product.deleteOne({ _id: req.params.productId }, function (err, res) {
-                    if (err) return res.send(err);
-                });
-    
+                await Product.deleteOne({ _id: req.params.productId });
             }else{
-                await Product.updateOne({_id: req.params.productId}, {active: false}, function(err, res) {
-                    if (err) res.json(err)
-                })
+                await Product.updateOne({_id: req.params.productId}, {active: false})
             }
 
-            return res.json({message:"Produto excluído"})
+            return res.status(200).json({message:"Produto excluído", error: false})
         }catch(err){
-            return res.json(err.stack)
+            return res.status(400).json({err: err.stack, message: "Problema ao excluir o produto", error: true})
         }
     },
 
     list: async (req, res, next) => {
-        const product  = await Product.findOne({_id: req.params.productId})
-        .populate('partner', {_id: 1, name: 1})
+        try{
+            const product  = await Product.findOne({_id: req.params.productId})
+            .populate('partner', {_id: 1, name: 1})
 
-        return res.json(product)
+            return res.status(200).json({product, error: false})
+        }catch(err){
+            return res.status(404).json({err: err.stack, message: "Produto não encontrado", error: true})
+        }
     },
 
     listAll: async (req, res, next) => {
-        const products  = await Product.find().populate('partner', {_id: 1, name: 1})
-        res.json(products)
+        try{
+            const products  = await Product.find().populate('partner', {_id: 1, name: 1})
+            return res.status(200).json({products, error: false})
+        }catch(err){
+            return res.status(404).json({err: err.stack, message: "Produtos não encontrados", error: true})
+        }
     },
 
     listIn: async (req, res, next) => {
         let productsId = []
-        for( let product of req.body.products){
-            productsId.push(product.productId)
-        }
-        
         try{
-            const product  = await Product.find({_id: {$in: productsId }})
+            for( let product of req.body.products){
+                productsId.push(product.productId)
+            }
+            
+            const products  = await Product.find({_id: {$in: productsId }})
             .populate('partner', {_id: 1, name: 1})
 
-            return res.json(product)
+            return res.status(200).json({products, error: false})
         }catch(err){
-           return res.json(err.stack)
+            return res.status(404).json({err: err.stack, message: "Produtos não encontrados", error: true})
         }
     },
 
     listByPartner: async (req, res, next) => {
         try{
             const products  = await Product.find({partner: req.userId}).populate('partner', {_id: 1, name: 1})
-            res.json(products)
+            return res.status(200).json({products, error: false})
         }catch(err){
-            res.json(err.stack)
+            return res.status(404).json({err: err.stack, message: "Produtos não encontrados", error: true})
         }
 
     },
@@ -103,9 +104,9 @@ const productController = {
             
             let shippingValue = await shipping.calculateShipping(data)
             
-            res.json(shippingValue)
+            return res.status(200).json({shippingValue, error: false})
         }catch(err){
-            res.json(err.stack)
+            return res.status(400).json({err: err.stack, message: "Problema ao calcular frete", error: true})
         }
     },
 }

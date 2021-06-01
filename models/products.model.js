@@ -19,7 +19,7 @@ const ProductSchema = new mongoose.Schema({
     },
     img_url:{
         type: String,
-        required: true
+        default: "placeholder.jpg"
     },
     active:{
         type: Boolean,

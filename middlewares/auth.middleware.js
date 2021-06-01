@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-const authConfig = require('../config/auth.json')
 
 module.exports = (req, res, next) => {
     const authHeader = req.headers.authorization
@@ -20,7 +19,7 @@ module.exports = (req, res, next) => {
         res.status(401).send({error: 'Token malformatted'})
     }
 
-    jwt.verify(token, authConfig.secret, (error, decoded) => {
+    jwt.verify(token, process.env.SECRET_WORD, (error, decoded) => {
         if(error) return res.status(401).send({error: "Token invalid"})
 
         req.userId = decoded.id

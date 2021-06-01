@@ -29,6 +29,9 @@ const interface = {
     sendPayment: async (data) =>{
         return await gateway.sendPayment(data)
     },
+    cancelPayment: async (paymentId, data) =>{
+        return await gateway.cancelPayment(paymentId, data)
+    },
     cardTokenization: async (data) =>{
         return await gateway.cardTokenization(data)
     },

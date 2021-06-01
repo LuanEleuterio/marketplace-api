@@ -4,6 +4,7 @@ const Charge = require("../models/charge.model");
 const Orders = require("../models/order.model");
 const Product = require("../models/products.model");
 const Partner = require("../models/partner.model");
+const Payment = require("../models/payment.model");
 
 //interface
 const gateway = require('../core/services/gateway/interface')
@@ -18,9 +19,10 @@ const orderController = {
         const payment = {
             body:{}
         }
-        const orderId = await orderHelper.createOrder()
 
         try{
+            const orderId = await orderHelper.createOrder()
+
             const user = await User.findOne({_id: req.userId})
 
             for(let order of req.body.orders){
@@ -60,45 +62,88 @@ const orderController = {
                     data.paymentId = await financialHelper.sendPay(payment, gateway)
                 }
 
+                let newQtd = product.qtd - order.qtd
+
                 await orderHelper.updateOrder(data)
+                await Product.updateOne({_id: product._id}, {qtd: newQtd})
             }
-            return res.json({message: "Pedido realizado!"})
+            return res.status(201).json({message: "Pedido realizado!", error: false})
         } catch(err){
-            return res.send(err)
+            return res.status(400).json({err: err.stack, message: "Não foi possível realizar o pedido!", error: true })
         }
     },
     cancel: async (req, res, next) => {
+        try{            
+            const order = await Orders.findOne({_id: req.body.orderId})
+                .select({ details: {$elemMatch: {_id: req.body.itemId}}})
+                .populate('details.product')
+                .populate('details.payment')
+                .populate('details.charge')
+                .populate('details.partner')
+            
+            const data = {
+                split: [
+                    {
+                    recipientToken: process.env.PRIVATE_TOKEN,
+                    percentage: 20,
+                    amountRemainder: true,
+                    chargeFee: true
+                    },
+                    {
+                    recipientToken: order.details[0].partner.junoAccount.resourceToken,
+                    percentage: 80,
+                    amountRemainder: false,
+                    chargeFee: true
+                    }
+                ]
+            }
 
+            const paymentCanceled = await gateway.cancelPayment(order.details[0].payment.payment[0].id, data)
+
+            await Payment.updateOne({_id: order.details[0].payment._id}, {$addToSet: {cancelDetails: paymentCanceled}});
+
+            await Charge.updateOne({_id: order.details[0].charge._id}, {status: 'CUSTOMER_PAID_BACK'})
+
+            await Orders.updateOne({_id: req.body.orderId, details: {$elemMatch: {_id: req.body.itemId}}},
+                {$set: {'details.$.status': "CANCELED",}});
+
+            return res.status(200).json({message:"Item cancelado!", error: false})
+        }catch(err){
+            return res.status(400).json({err: err.stack, message: "Problema ao cancelar o pedido!", error: true })
+        }
     },
     listByUser: async (req, res, next) => {
         try{
-            const orders = await Orders.find({ customer: req.userId },function (err, res) {
-                    if (err) res.status(400).send({error: err,message: "Orders not found!"});
-                }
-            ).populate('details.product')
+            const orders = await Orders.find({customer: req.userId })
+            .populate('details.product')
             .populate("details.payment")
             .populate("details.charge")
             .populate("details.partner", {name: 1})
             .populate("customer", {address: 1});
-
-            return res.json(orders)
+            
+            return res.status(200).json({orders, error: false})
         }catch(err){
-            return res.json(err.stack)
+            return res.status(404).json({err: err.stack, message:"Pedidos não encontrados", error: true})
         }   
     },
     listByPartner: async (req, res, next) => {
         try{
-
-            const orders = await Orders.find({ 'details.partner': req.userId },function (err, res) {
-                if (err) res.status(400).send({error: err,message: "Orders not found!"});
-            }).populate("details.product")
+            const orders = await Orders.find({'details.partner': req.userId })
+            .select({'details.partner': {$elemMatch: {partner: req.userId}}})
+            .populate("details.product")
             .populate("details.payment")
             .populate("details.charge")
             .populate("customer", {name: 1, address: 1, phone: 1, email: 1});
-    
-            return res.json(orders)
+
+            for( let order of orders){
+                let newOrder = order.details.filter((detail) => {
+                    return req.userId == detail.partner
+                })
+                order.details = newOrder
+            }
+            return res.status(200).json({orders, error: false})
         }catch(err){
-            return res.json(err.stack)
+            return res.status(404).json({err: err.stack, message:"Pedidos não encontrados", error: true})
         }   
     }
 };

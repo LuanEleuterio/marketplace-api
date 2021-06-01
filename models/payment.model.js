@@ -44,6 +44,31 @@ const PaymentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    cancelDetails:[{
+        transactionId: {
+            type: String
+        },
+        installments: {
+            type: Number
+        },
+        refunds: [{
+            id:{
+                type: String
+            },
+            chargeId:{
+                type: String
+            },
+            releaseDate:{
+                type: Date
+            },
+            paybackDate:{
+                type: Date
+            },
+            status:{
+                type: String
+            }
+        }],
+    }],
     createdAt:{
         type: Date,
         default: Date.now
