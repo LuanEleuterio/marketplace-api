@@ -16,7 +16,7 @@ const authenticateController = {
             }
 
             if(!user){
-                return res.status(400).json({message: 'User not found', error: true})
+                return res.status(404).json({message: 'User not found', error: true})
             }
             if(!await bcrypt.compare(password, user.password)){
                 return res.status(400).json({message: 'User or password incorret', error: true})

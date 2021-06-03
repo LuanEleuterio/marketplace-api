@@ -47,7 +47,6 @@ const productController = {
         try{
             const product  = await Product.findOne({_id: req.params.productId})
             .populate('partner', {_id: 1, name: 1})
-
             return res.status(200).json({product, error: false})
         }catch(err){
             return res.status(404).json({err: err.stack, message: "Produto não encontrado", error: true})
@@ -104,6 +103,7 @@ const productController = {
             
             let shippingValue = await shipping.calculateShipping(data)
             
+            console.log(shippingValue)
             return res.status(200).json({shippingValue, error: false})
         }catch(err){
             return res.status(400).json({err: err.stack, message: "Problema ao calcular frete", error: true})
