@@ -103,7 +103,6 @@ const productController = {
             
             let shippingValue = await shipping.calculateShipping(data)
             
-            console.log(shippingValue)
             return res.status(200).json({shippingValue, error: false})
         }catch(err){
             return res.status(400).json({err: err.stack, message: "Problema ao calcular frete", error: true})

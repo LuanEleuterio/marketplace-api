@@ -99,7 +99,7 @@ const orderController = {
             }
 
             const paymentCanceled = await gateway.cancelPayment(order.details[0].payment.payment[0].id, data)
-
+            
             await Payment.updateOne({_id: order.details[0].payment._id}, {$addToSet: {cancelDetails: paymentCanceled}});
 
             await Charge.updateOne({_id: order.details[0].charge._id}, {status: 'CUSTOMER_PAID_BACK'})
@@ -115,6 +115,7 @@ const orderController = {
     listByUser: async (req, res, next) => {
         try{
             const orders = await Orders.find({customer: req.userId })
+            .sort({createdAt: -1})
             .populate('details.product')
             .populate("details.payment")
             .populate("details.charge")
@@ -130,6 +131,7 @@ const orderController = {
         try{
             const orders = await Orders.find({'details.partner': req.userId })
             .select({'details.partner': {$elemMatch: {partner: req.userId}}})
+            .sort({createdAt: -1})
             .populate("details.product")
             .populate("details.payment")
             .populate("details.charge")

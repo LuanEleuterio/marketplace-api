@@ -22,9 +22,9 @@ const userController = {
             await User.updateOne({_id:userId},{$addToSet: {cards: card.id}}, function(err, res) {
                if (err) console.log(err)
             })
-            return res.send(response)
+            return res.status(201).json(response)
         } catch(err){
-            return res.send(err)
+            return res.status(400).json(err)
         }
     },
     delete: async (req, res, next) => {
