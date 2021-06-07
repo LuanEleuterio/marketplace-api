@@ -19,10 +19,9 @@ const orderController = {
         const payment = {
             body:{}
         }
-
+        
         try{
             const orderId = await orderHelper.createOrder()
-
             const user = await User.findOne({_id: req.userId})
 
             for(let order of req.body.orders){
@@ -69,6 +68,7 @@ const orderController = {
             }
             return res.status(201).json({message: "Pedido realizado!", error: false})
         } catch(err){
+            await Order.deleteOne({_id: orderId})
             return res.status(400).json({err: err.stack, message: "Não foi possível realizar o pedido!", error: true })
         }
     },

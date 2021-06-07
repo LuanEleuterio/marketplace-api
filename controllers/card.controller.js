@@ -22,9 +22,9 @@ const userController = {
             await User.updateOne({_id:userId},{$addToSet: {cards: card.id}}, function(err, res) {
                if (err) console.log(err)
             })
-            return res.status(201).json(response)
+            return res.status(201).json({cards: response, error: false})
         } catch(err){
-            return res.status(400).json(err)
+            return res.status(400).json({err: err.stack, message: "Erro ao cadastrar cartão", error: true})
         }
     },
     delete: async (req, res, next) => {
@@ -52,17 +52,20 @@ const userController = {
                 });
             }
 
-            return res.json({ message: "Cartão removido!" });
+            return res.json({ message: "Cartão removido!" , error: false});
         } catch (err) {
-            return res.json({err});
+            return res.json({err: err.stack, message: "Problema ao excluir cartão", error: true});
         }
     },
     listAll: async (req, res, next) => {
-        const cards = await Cards.find({ customer: req.userId },function (err, res) {
-            if (err) res.status(400).send({error: err,message: "Cards not found!"});
-        }).populate("customer", {_id: 1, name: 1, address: 1})
+        try{
+            const cards = await Cards.find({ customer: req.userId })
+            .populate("customer", {_id: 1, name: 1, address: 1})
 
-        return res.send(cards)
+            return res.status(200).json({cards, error: false})
+        }catch(err){
+            return res.status(400).json({err: err.stack, message: "Cartões não encontrados", error: true})
+        }
     }
 };
 
