@@ -5,10 +5,19 @@ const Orders = require('../models/order.model')
 //Services
 const shipping = require('../core/services/shipping/interface')
 
+const Sentry = require("@sentry/node");
+
+const Tracing = require("@sentry/tracing");
+
+Sentry.init({
+  dsn: "https://9fef0ef412f74bcea0332d5704a2e513@o815513.ingest.sentry.io/5807077",
+  tracesSampleRate: 1.0,
+});
+
 const productController = {
     create: async (req, res, next) => {
-        req.body.partner = req.userId
         try{   
+            req.body.partner = req.userId
             const product = await Product.create(req.body)
             return res.status(201).json({message: "Product created!", product, error: false})
         } catch(err){
@@ -19,6 +28,7 @@ const productController = {
     update: async (req, res, next) => {
         const data = req.body
         try{
+            data.updatedAt = Date.now()
             await Product.updateOne({_id: data.productId}, data)
             return res.status(200).json({message:"Produto alterado", error: false})
         }catch(err){
@@ -28,13 +38,12 @@ const productController = {
 
     delete: async (req, res, next) => {
         try{
-
             let hasProdInOrder = await Orders.findOne({'details.product': req.params.productId})
 
             if(!hasProdInOrder){
                 await Product.deleteOne({ _id: req.params.productId });
             }else{
-                await Product.updateOne({_id: req.params.productId}, {active: false})
+                await Product.updateOne({_id: req.params.productId}, {active: false, deleted: true, deletedAt: Date.now()})
             }
 
             return res.status(200).json({message:"Produto excluído", error: false})
@@ -54,11 +63,19 @@ const productController = {
     },
 
     listAll: async (req, res, next) => {
-        try{
+        const transaction = Sentry.startTransaction({
+            op: "test",
+            name: "My First Test Transaction",
+          });
+          
+        try {
             const products  = await Product.find().populate('partner', {_id: 1, name: 1})
             return res.status(200).json({products, error: false})
-        }catch(err){
-            return res.status(404).json({err: err.stack, message: "Produtos não encontrados", error: true})
+        } catch (e) {
+            Sentry.captureException(e);
+            res.status(404).json({err: err.stack, message: "Produtos não encontrados", error: true})
+        } finally {
+            transaction.finish();
         }
     },
 
@@ -85,7 +102,6 @@ const productController = {
         }catch(err){
             return res.status(404).json({err: err.stack, message: "Produtos não encontrados", error: true})
         }
-
     },
 
     shipping: async(req, res, next) => {

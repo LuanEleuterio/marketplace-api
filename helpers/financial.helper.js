@@ -97,19 +97,19 @@ const financialHelper = {
         return data
     },
     
-    sendPay: async (pay, gateway) => {
+    sendPay: async (paymentBody, sendPayment) => {
         let obj = {}
         try{
-            const card = await Cards.findOne({_id: pay.cardId})
+            const card = await Cards.findOne({_id: paymentBody.cardId})
 
-            obj.body = pay.body
-            obj.card = card
-            obj.user = pay.user
-
-            const response = await gateway.sendPayment(obj)
+            pay.body = paymentBody.body
+            pay.card = card
+            pay.user = paymentBody.user
+            
+            const response = await sendPayment(pay)
             const payment = await Payment.create(response)
 
-            await Charge.updateOne({id:obj.body.chargeId},{status: "PAID"}, function(err, res) {
+            await Charge.updateOne({id:pay.body.chargeId},{status: "PAID"}, function(err, res) {
                 if (err) res.send(err)
             })
 

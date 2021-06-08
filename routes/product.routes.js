@@ -1,16 +1,16 @@
 const authMiddleware = require("../middlewares/auth.middleware")
 const PartnerMiddleware = require("../middlewares/authPartner.middleware")
-const ProductController = require("../controllers/product.controller");
+const controller = require("../controllers/product.controller");
 
 module.exports = (app) => {
-    app.get("/products/partner", [authMiddleware, PartnerMiddleware], ProductController.listByPartner);
-    app.get("/products/shipping", ProductController.shipping);
+    app.get("/products/partner", [authMiddleware, PartnerMiddleware], controller.listByPartner);
+    app.get("/products/shipping", controller.shipping);
     
-    app.delete("/products/:productId", authMiddleware, ProductController.delete);
-    app.get("/products/:productId", ProductController.list);
+    app.delete("/products/:productId", authMiddleware, controller.delete);
+    app.get("/products/:productId", controller.list);
 
-    app.post("/products-in", ProductController.listIn);
-    app.get("/products", ProductController.listAll);
-    app.post("/products", [authMiddleware, PartnerMiddleware], ProductController.create);
-    app.put("/products", authMiddleware, ProductController.update);
+    app.post("/products-in", controller.listIn);
+    app.get("/products", controller.listAll);
+    app.post("/products", [authMiddleware, PartnerMiddleware], controller.create);
+    app.put("/products", authMiddleware, controller.update);
 };

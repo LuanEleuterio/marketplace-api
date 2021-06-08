@@ -34,8 +34,15 @@ const CardsSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    updatedAt:{
+        type: Date
+    },
     deletedAt:{
         type: Date
+    },
+    deleted:{
+        type: Boolean,
+        default: false
     }
 })
 

@@ -93,13 +93,13 @@ const junoGateway = {
         }
     },
     createCharge: async (data) => {
-        const token = await authHelper.get()
-        const config = {}
-        config['X-Api-Version'] = process.env.API_VERSION
-        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${token}`
-
         try{
+            const token = await authHelper.get()
+            const config = {}
+            config['X-Api-Version'] = process.env.API_VERSION
+            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+            config['Authorization'] = `Bearer ${token}`
+            
             const chargeToApi = await financialHelper.formatToSendApi(data.user, data.partner, data.product, data.body)
             const request = await api("POST", baseUrl, "/charges", chargeToApi, config)
             const chargeToDB = await financialHelper.formatToSendDB(
@@ -128,15 +128,15 @@ const junoGateway = {
             return err
         }
     },
-    sendPayment: async (data) => {
-        const token = await authHelper.get()
-        
-        const config = {}
-        config['X-Api-Version'] = process.env.API_VERSION
-        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${token}`
-       
+    sendPayment: async (data) => {      
         try{
+            const token = await authHelper.get()
+        
+            const config = {}
+            config['X-Api-Version'] = process.env.API_VERSION
+            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+            config['Authorization'] = `Bearer ${token}`
+
             const paymentDataToApi = await financialHelper.formatPayment(data.card, data.user, data.body.chargeId)
             let request = await api("POST", baseUrl, "/payments", paymentDataToApi, config)
             const paymentDataToDB = await financialHelper.formatPaymentToDB(request.data, data.user)
@@ -163,14 +163,14 @@ const junoGateway = {
         }
     },
     cardTokenization: async (data) => {    
-        const token = await authHelper.get()
-        
-        const config = {}
-        config['X-Api-Version'] = process.env.API_VERSION
-        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-        config['Authorization'] = `Bearer ${token}`
-
         try{
+            const token = await authHelper.get()
+        
+            const config = {}
+            config['X-Api-Version'] = process.env.API_VERSION
+            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+            config['Authorization'] = `Bearer ${token}`
+
             let request = await api("POST", baseUrl, "/credit-cards/tokenization", data, config)
           
             return request.data

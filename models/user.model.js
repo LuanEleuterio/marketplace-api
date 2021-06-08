@@ -12,7 +12,6 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
     document:{
-        unique: true,
         type: String
     },
     dtnasc:{

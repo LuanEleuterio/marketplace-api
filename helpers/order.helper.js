@@ -22,7 +22,7 @@ const orderHelper = {
         data?.paymentId ? order.payment  = data.paymentId : null
         data?.amount    ? order.amount   = parseInt(data.amount)  : null
         data?.shippingValue ? order.shippingValue  = data.shippingValue : null
-
+        order.updateAt = Date.now()
         try{
             await Order.updateOne({_id: data.orderId }, {$addToSet: {details: order}, customer: user.customer})
             return

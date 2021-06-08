@@ -19,7 +19,7 @@ const partnerController = {
 
             partner.password = undefined
 
-            return res.status(201).json({partnerId: partner._id, token, error: false})
+            return res.status(201).json({userId: partner._id, token, error: false, type: "PARTNER"})
         } catch(err){
             return res.status(400).json({err: err.stack, message: "Problema ao criar parceiro", error: true})
         }
@@ -27,6 +27,7 @@ const partnerController = {
     update: async (req, res, next) =>{
         try{
             req.body.signUpCompleted = true
+            req.body.updatedAt = Date.now()
             await Partner.updateOne({_id: req.userId}, req.body)
 
             return res.status(200).json({message: "Dados alterados!", error: false})

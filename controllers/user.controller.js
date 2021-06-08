@@ -8,21 +8,22 @@ const userHelper = require('../helpers/user.helper')
 
 const userController = {
     create: async (req, res, next) => {
-        const { email } = req.body;
-
         try {
+            const { email } = req.body;
+            
             if (await User.findOne({ email })) {
                 return res.status(400).json({ error: "Usuário já existe" });
             }
 
             const user = await User.create(req.body);
+
             const token = await generateToken({ id: user.id, userOrPartner: "USER"});
 
             user.password = undefined;
 
             await userHelper.sendEmailWelcome(req.body)
 
-            return res.status(201).json({ userId: user._id, token, error: false });
+            return res.status(201).json({ userId: user._id, token, error: false, type: "USER"});
         } catch (err) {
             return res.status(400).json({ err: err, message: "Problema ao cadastrar", error: true });
         }
@@ -30,6 +31,7 @@ const userController = {
     update: async (req, res, next) => {
         try{
             req.body.signUpCompleted = true
+            req.body.updatedAt = Date.now()
             await User.updateOne({_id: req.userId}, req.body)
             return res.status(200).json({message:'Dados atualizados!', error: false})
         }catch(err){

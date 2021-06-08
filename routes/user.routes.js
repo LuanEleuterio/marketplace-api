@@ -1,8 +1,8 @@
-const UserController = require("../controllers/user.controller");
+const controller = require("../controllers/user.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
 module.exports = (app) => {
-    app.get("/user", authMiddleware, UserController.list);
-    app.put("/user", authMiddleware, UserController.update);
-    app.post("/user", UserController.create);
+    app.get("/user", authMiddleware, controller.list);
+    app.put("/user", authMiddleware, controller.update);
+    app.post("/user", controller.create);
 };

@@ -8,9 +8,10 @@ const gateway = require('../core/services/gateway/interface')
 
 const userController = {
     create: async (req, res, next) => {
-        const userId = req.userId
-        const holderName = req.body.holderName
         try{
+            const userId = req.userId
+            const holderName = req.body.holderName
+
             delete req.body.holderName
             
             const response = await gateway.cardTokenization(req.body)
@@ -28,9 +29,10 @@ const userController = {
         }
     },
     delete: async (req, res, next) => {
-        const cardId = req.params.cardId;
-        const userId = req.userId;
         try {
+            const cardId = req.params.cardId;
+            const userId = req.userId;
+
             await User.updateOne(
                 { _id: userId },
                 { $pull: { cards: cardId } },
@@ -42,19 +44,15 @@ const userController = {
             let hasCardInCharge = await Charge.findOne({card: cardId})
 
             if(!hasCardInCharge){
-                await Cards.deleteOne({ _id: cardId}, function (err, res) {
-                    if (err) return res.send(err);
-                });
+                await Cards.deleteOne({ _id: cardId});
     
             }else{
-                await Cards.updateOne({ _id: cardId }, {active: false},function (err, res) {
-                    if (err) return res.send(err);
-                });
+                await Cards.updateOne({ _id: cardId }, {active: false, deleted: true, deletedAt: Date.now()});
             }
 
-            return res.json({ message: "Cartão removido!" , error: false});
+            return res.status(200).json({ message: "Cartão removido!" , error: false});
         } catch (err) {
-            return res.json({err: err.stack, message: "Problema ao excluir cartão", error: true});
+            return res.status(400).json({err: err.stack, message: "Problema ao excluir cartão", error: true});
         }
     },
     listAll: async (req, res, next) => {

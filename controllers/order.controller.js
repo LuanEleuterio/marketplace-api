@@ -58,7 +58,7 @@ const orderController = {
                     payment.body.chargeId = charge.id
                     payment.orderId = orderId
                     payment.cardId = req.body.cardId
-                    data.paymentId = await financialHelper.sendPay(payment, gateway)
+                    data.paymentId = await financialHelper.sendPay(payment, gateway.sendPayment)
                 }
 
                 let newQtd = product.qtd - order.qtd

@@ -51,6 +51,13 @@ const OrderSchema = new mongoose.Schema({
     },
     updatedAt:{
         type: Date
+    },
+    deletedAt:{
+        type: Date
+    },
+    deleted:{
+        type: Boolean,
+        default: false
     }
 })
 
