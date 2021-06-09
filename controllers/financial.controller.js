@@ -1,21 +1,24 @@
 //Models
-const Cards = require('../models/cards.model')
-const User = require('../models/user.model')
 const Partner = require('../models/partner.model')
-const Product = require('../models/products.model')
-const Charge = require('../models/charge.model')
-const Payment = require('../models/payment.model')
-const Order = require('../models/order.model')
-
-//Helpers
-const orderHelper = require('../helpers/order.helper')
-const financialHelper = require('../helpers/financial.helper')
 
 //interface
 const gateway = require('../core/services/gateway/interface')
 
+//Logs
+const Sentry = require("@sentry/node");
+const Tracing = require("@sentry/tracing");
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
+
 const financialController = {
     createDigitalAccount: async (req, res, next) => {
+        const transaction = Sentry.startTransaction({
+            op: "Create Digital Account",
+            name: "Criação de Conta Digital",
+        });
+        
         let data
         try{
             const partner = await Partner.findOne({_id: req.userId}, {_id: 0, createdAt: 0, junoAccount: 0, __v: 0})
@@ -48,9 +51,20 @@ const financialController = {
             data.hasJunoAccount = true
 
             await Partner.updateOne({_id: req.userId}, data)
+            
+            Sentry.setContext("Create Digital Account", {
+                title: "Create Digital Account",
+                stage: "1",
+                partnerId: partner._id.toString(),
+                payload: data.junoAccount,
+            });
+
             return res.status(201).json({message: "Conta Digital criada!", data: data, error: false})
         }catch(err){
+            Sentry.captureException(err);
             res.status(400).json({err: err.stack, error: true})
+        }finally{
+            transaction.finish();
         }
     },
     getBanks: async (req, res, next) => {

@@ -27,7 +27,6 @@ const orderHelper = {
             await Order.updateOne({_id: data.orderId }, {$addToSet: {details: order}, customer: user.customer})
             return
         }catch(err){
-            console.log(err)
             return err
         }
     }

@@ -6,8 +6,20 @@ const User = require("../models/user.model");
 //Helpers
 const userHelper = require('../helpers/user.helper')
 
+//Logs
+const Sentry = require("@sentry/node");
+const Tracing = require("@sentry/tracing");
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
+
 const userController = {
     create: async (req, res, next) => {
+        const transaction = Sentry.startTransaction({
+            op: "Create User",
+            name: "Criação de Usuário",
+        });
         try {
             const { email } = req.body;
             
@@ -17,15 +29,22 @@ const userController = {
 
             const user = await User.create(req.body);
 
-            const token = await generateToken({ id: user.id, userOrPartner: "USER"});
+            Sentry.setContext("User Created", {
+                title: "User Created",
+                stage: "1",
+                payload: user,
+            });
 
-            user.password = undefined;
+            const token = await generateToken({ id: user.id, userOrPartner: "USER"});
 
             await userHelper.sendEmailWelcome(req.body)
 
             return res.status(201).json({ userId: user._id, token, error: false, type: "USER"});
         } catch (err) {
+            Sentry.captureException(err);
             return res.status(400).json({ err: err, message: "Problema ao cadastrar", error: true });
+        } finally{
+            transaction.finish();
         }
     },
     update: async (req, res, next) => {

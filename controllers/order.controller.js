@@ -13,21 +13,40 @@ const gateway = require('../core/services/gateway/interface')
 const orderHelper = require("../helpers/order.helper")
 const financialHelper = require('../helpers/financial.helper')
 
+//Logs
+const Sentry = require("@sentry/node");
+const Tracing = require("@sentry/tracing");
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
+
 const orderController = {
     create: async (req, res, next) => {
-        const data = {}
-        const payment = {
-            body:{}
-        }
-        
+        const transaction = Sentry.startTransaction({
+            op: "Create Order",
+            name: "Criação de Pedido(s)",
+        });
+
         try{
+            const data = {}
+            const payment = {
+                body:{}
+            }
+
             const orderId = await orderHelper.createOrder()
             const user = await User.findOne({_id: req.userId})
+
+            Sentry.setContext("Order Created", {
+                title: "Order Created",
+                stage: "1",
+                orderId: orderId,
+                payload: req.body,
+            });
 
             for(let order of req.body.orders){
                 const product = await Product.findOne({_id: order.productId})
                 const partner = await Partner.findOne({_id: product.partner})
-
 
                 data.body = req.body
                 data.body.productQtd = order.qtd
@@ -38,11 +57,19 @@ const orderController = {
                 data.user = user
                 
                 const response = await gateway.createCharge(data)
+                
                 if(req.body.paymentType){
                     response.card = req.body.cardId
                 }
 
                 const charge = await Charge.create(response)
+
+                Sentry.setExtra("Charge Created", {
+                    title: "Charge Created",
+                    stage: "2",
+                    orderId: orderId,
+                    payload: charge,
+                })
 
                 data.user = user._id
                 data.charge = charge._id
@@ -59,20 +86,47 @@ const orderController = {
                     payment.orderId = orderId
                     payment.cardId = req.body.cardId
                     data.paymentId = await financialHelper.sendPay(payment, gateway.sendPayment)
+                   
+                    Sentry.setExtra("Payment Created", {
+                        title: "Payment Created",
+                        stage: "2",
+                        orderId: orderId,
+                        payload: {
+                            paymentId: data.paymentId
+                        },
+                    })
                 }
 
                 let newQtd = product.qtd - order.qtd
 
                 await orderHelper.updateOrder(data)
                 await Product.updateOne({_id: product._id}, {qtd: newQtd})
+
+                Sentry.setExtra("Order Update", {
+                    title: "Order Update",
+                    stage: "2",
+                    orderId: orderId,
+                    payload: {
+                        productId: product._id,
+                        productName: product.name
+                    },
+                })
             }
-            return res.status(201).json({message: "Pedido realizado!", error: false})
+            return res.status(201).json({message: "Pedido realizado!", orderId, error: false})
         } catch(err){
+            Sentry.captureException(err);
             await Order.deleteOne({_id: orderId})
-            return res.status(400).json({err: err.stack, message: "Não foi possível realizar o pedido!", error: true })
+            res.status(400).json({err: err.stack, message: "Não foi possível realizar o pedido!", error: true })
+        }finally{
+            transaction.finish();
         }
     },
     cancel: async (req, res, next) => {
+        const transaction = Sentry.startTransaction({
+            op: "Cancel Order",
+            name: "Cancelamento de Pedido(s)",
+        });
+
         try{            
             const order = await Orders.findOne({_id: req.body.orderId})
                 .select({ details: {$elemMatch: {_id: req.body.itemId}}})
@@ -106,10 +160,26 @@ const orderController = {
 
             await Orders.updateOne({_id: req.body.orderId, details: {$elemMatch: {_id: req.body.itemId}}},
                 {$set: {'details.$.status': "CANCELED",}});
+            
+            console.log(order.details[0]._id)
+            console.log(order.details[0]._id.toString())
 
-            return res.status(200).json({message:"Item cancelado!", error: false})
+            Sentry.setContext("Item Order Canceled", {
+                title: "Item Order Canceled",
+                stage: "1",
+                orderId: order._id,
+                payload: {
+                    itemId: order.details[0]._id.toString(),
+                    productName: order.details[0].product.name
+                },
+            });
+
+            res.status(200).json({message:"Item cancelado!", error: false})
         }catch(err){
-            return res.status(400).json({err: err.stack, message: "Problema ao cancelar o pedido!", error: true })
+            Sentry.captureException(err);
+            res.status(400).json({err: err.stack, message: "Problema ao cancelar o pedido!", error: true })
+        }finally{
+            transaction.finish();
         }
     },
     listByUser: async (req, res, next) => {

@@ -3,8 +3,21 @@ const generateToken = require('../core/generateToken')
 //Models
 const Partner = require('../models/partner.model')
 
+//Logs
+const Sentry = require("@sentry/node");
+const Tracing = require("@sentry/tracing");
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
+
 const partnerController = {
     create: async (req, res, next) => {
+        const transaction = Sentry.startTransaction({
+            op: "Create Partner",
+            name: "Criação de Parceiro",
+        });
+
         try{
             const { email } = req.body
             const partnerData = req.body
@@ -14,14 +27,21 @@ const partnerController = {
             }
 
             const partner = await Partner.create(partnerData)
+            
+            Sentry.setContext("Partner Created", {
+                title: "Partner Created",
+                stage: "1",
+                payload: partner,
+            });
 
             const token = await generateToken({id: partner.id, userOrPartner: "PARTNER"})
 
-            partner.password = undefined
-
             return res.status(201).json({userId: partner._id, token, error: false, type: "PARTNER"})
         } catch(err){
+            Sentry.captureException(err);
             return res.status(400).json({err: err.stack, message: "Problema ao criar parceiro", error: true})
+        }finally{
+            transaction.finish();
         }
     },
     update: async (req, res, next) =>{

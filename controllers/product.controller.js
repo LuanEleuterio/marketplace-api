@@ -63,24 +63,11 @@ const productController = {
     },
 
     listAll: async (req, res, next) => {
-        const transaction = Sentry.startTransaction({
-            op: "test",
-            name: "My First Test Transaction",
-          });
-          
         try {
-            Sentry.setContext("character", {
-                name: "Luan",
-                age: 22,
-                attack_type: "fura",
-              });
             const products  = await Product.find().populate('partner', {_id: 1, name: 1})
-            return res.status(200).json({products, error: false})
-        } catch (e) {
-            Sentry.captureException(e);
+            res.status(200).json({products, error: false})
+        } catch (err) {
             res.status(404).json({err: err.stack, message: "Produtos não encontrados", error: true})
-        } finally {
-            transaction.finish();
         }
     },
 
