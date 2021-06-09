@@ -98,7 +98,7 @@ const financialHelper = {
     },
     
     sendPay: async (paymentBody, sendPayment) => {
-        let obj = {}
+        let pay = {}
         try{
             const card = await Cards.findOne({_id: paymentBody.cardId})
 
@@ -109,7 +109,7 @@ const financialHelper = {
             const response = await sendPayment(pay)
             const payment = await Payment.create(response)
 
-            await Charge.updateOne({id:pay.body.chargeId},{status: "PAID"}, function(err, res) {
+            await Charge.updateOne({id:pay.body.chargeId},{status: "PAID", updatedAt: Date.now()}, function(err, res) {
                 if (err) res.send(err)
             })
 

@@ -10,7 +10,7 @@ const Sentry = require("@sentry/node");
 const Tracing = require("@sentry/tracing");
 
 Sentry.init({
-  dsn: "https://9fef0ef412f74bcea0332d5704a2e513@o815513.ingest.sentry.io/5807077",
+  dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
 });
 
@@ -69,6 +69,11 @@ const productController = {
           });
           
         try {
+            Sentry.setContext("character", {
+                name: "Luan",
+                age: 22,
+                attack_type: "fura",
+              });
             const products  = await Product.find().populate('partner', {_id: 1, name: 1})
             return res.status(200).json({products, error: false})
         } catch (e) {

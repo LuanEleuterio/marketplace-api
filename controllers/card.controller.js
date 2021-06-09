@@ -45,7 +45,6 @@ const userController = {
 
             if(!hasCardInCharge){
                 await Cards.deleteOne({ _id: cardId});
-    
             }else{
                 await Cards.updateOne({ _id: cardId }, {active: false, deleted: true, deletedAt: Date.now()});
             }
