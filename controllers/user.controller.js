@@ -21,13 +21,21 @@ const userController = {
             name: "Criação de Usuário",
         });
         try {
+            let fieldsMalformatted = await userHelper.verifyFieldsBody(req.body)
+
+            if(fieldsMalformatted.length > 0){
+                req.body.fieldsMalformatted = fieldsMalformatted
+                throw new Error('ERR001')
+            }
             const { email } = req.body;
             
             if (await User.findOne({ email })) {
-                return res.status(400).json({ error: "Usuário já existe" });
+                throw new Error('ERR002')
             }
 
             const user = await User.create(req.body);
+
+            if(!user) throw new Error("ERR003")
 
             Sentry.setContext("User Created", {
                 title: "User Created",
@@ -40,9 +48,9 @@ const userController = {
             await userHelper.sendEmailWelcome(req.body)
 
             return res.status(201).json({ userId: user._id, token, error: false, type: "USER"});
-        } catch (err) {
-            Sentry.captureException(err);
-            return res.status(400).json({ err: err, message: "Problema ao cadastrar", error: true });
+        } catch (e) {
+            Sentry.captureException(e);
+            next(e)
         } finally{
             transaction.finish();
         }
@@ -51,21 +59,25 @@ const userController = {
         try{
             req.body.signUpCompleted = true
             req.body.updatedAt = Date.now()
-            await User.updateOne({_id: req.userId}, req.body)
-            return res.status(200).json({message:'Dados atualizados!', error: false})
-        }catch(err){
-            return res.status(400).json({err: err.stack, message: "Problemas ao atualizar dados", error: true})
+            await User.updateOne({_id: req.userId}, req.body, function(err){
+                if(err) throw new Error("ERR004")
+            })
+
+            res.status(200).json({message:'Dados atualizados!', error: false})
+        }catch(e){
+            next(e)
         }
     },
     list: async (req, res, next) => {
         try {
             const user = await User.findOne({ _id: req.userId })
             .populate('cards', {_id: 1, last4CardNumber: 1});
-            user.password = undefined;
 
-            return res.status(200).json({ user, error: false });
-        } catch (err) {
-            return res.status(404).json({ err: err, message: "Usuário não encontrado", error: true});
+            if(!user) throw new Error("ERR005")
+
+            res.status(200).json({ user, error: false });
+        } catch(e) {
+            next(e)
         }
     }
 };

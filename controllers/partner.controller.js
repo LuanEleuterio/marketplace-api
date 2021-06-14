@@ -3,6 +3,9 @@ const generateToken = require('../core/generateToken')
 //Models
 const Partner = require('../models/partner.model')
 
+//Helpers
+const partnerHelper = require('../helpers/partner.helper')
+
 //Logs
 const Sentry = require("@sentry/node");
 const Tracing = require("@sentry/tracing");
@@ -19,14 +22,22 @@ const partnerController = {
         });
 
         try{
+            let fieldsMalformatted = partnerHelper.verifyFieldsBody(req.body)
+            if(fieldsMalformatted.length > 0){
+                req.body.fieldsMalformatted = fieldsMalformatted
+                throw new Error('ERR001')
+            }
+
             const { email } = req.body
             const partnerData = req.body
 
             if(await Partner.findOne({email})){
-                return res.status(400).json({error: "Parceiro já existe"})
+               throw new Error('ERR002')
             }
 
             const partner = await Partner.create(partnerData)
+            
+            if(!partner) throw new Error('ERR003')
             
             Sentry.setContext("Partner Created", {
                 title: "Partner Created",
@@ -36,10 +47,10 @@ const partnerController = {
 
             const token = await generateToken({id: partner.id, userOrPartner: "PARTNER"})
 
-            return res.status(201).json({userId: partner._id, token, error: false, type: "PARTNER"})
-        } catch(err){
-            Sentry.captureException(err);
-            return res.status(400).json({err: err.stack, message: "Problema ao criar parceiro", error: true})
+            res.status(201).json({userId: partner._id, token, error: false, type: "PARTNER"})
+        } catch(e){
+            Sentry.captureException(e);
+            next(e)
         }finally{
             transaction.finish();
         }
@@ -48,19 +59,23 @@ const partnerController = {
         try{
             req.body.signUpCompleted = true
             req.body.updatedAt = Date.now()
-            await Partner.updateOne({_id: req.userId}, req.body)
-
-            return res.status(200).json({message: "Dados alterados!", error: false})
-        }catch(err){
-            return res.status(400).json({err: err.stack, message:"Problema ao atualizar produto", error: true})
+            await Partner.updateOne({_id: req.userId}, req.body, function(err){
+                if(err) throw new Error("ERR004")
+            })
+            res.status(200).json({message: "Dados alterados!", error: false})
+        }catch(e){
+            next(e)
         }
     },
     list: async (req, res, next) => {
         try{
             const partner  = await Partner.findOne({_id: req.userId})
-            return res.status(200).json({partner, error: false})
-        }catch(err){
-            return  res.status(404).json({err: err.stack, message: "Problema ao procurar parceiro", error: true})
+
+            if(!partner) throw new Error("ERR005")
+
+            res.status(200).json({partner, error: false})
+        }catch(e){
+            next(e)
         }
     }
 }

@@ -26,6 +26,24 @@ const userHelper = {
             res.send(err.stack)
         }
     },
+
+    verifyFieldsBody: async (body) =>{
+        let fieldsNotFounds = []
+        
+        if(!body.name)
+            fieldsNotFounds.push("name")
+         
+        if(!body.email)
+            fieldsNotFounds.push("email")
+             
+        if(!body.dtnasc)
+            fieldsNotFounds.push("dtnasc") 
+
+        if(!body.password)
+            fieldsNotFounds.push("password")
+        
+        return fieldsNotFounds
+    }
 }
 
 module.exports = userHelper
