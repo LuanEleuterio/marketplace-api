@@ -45,6 +45,9 @@ const OrderSchema = new mongoose.Schema({
         required: true,
         default: "ACTIVE"
     },
+    date: {
+        type: String
+    },
     createdAt:{
         type: Date,
         default: Date.now

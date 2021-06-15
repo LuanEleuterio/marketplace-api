@@ -1,11 +1,15 @@
+const moment = require('moment')
+
 //Models
 const Order = require('../models/order.model')
 
 const orderHelper = {
     createOrder: async () => {
         const data = {}
+        const dateNow = moment().format('YYYY-MM-DD')
+
         data.status = 'PROCESSING'
-        
+        data.date = dateNow
         const order = await Order.create(data)
 
         if(!order) throw new Error("ERR010")
