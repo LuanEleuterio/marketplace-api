@@ -125,6 +125,10 @@ const PartnerSchema = new mongoose.Schema({
         required: true,
         select: false
     },
+    active:{
+        type: Boolean,
+        default: true
+    },
     createdAt:{
         type: Date,
         default: Date.now

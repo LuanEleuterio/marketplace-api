@@ -6,7 +6,6 @@ const gateway = require('../core/services/gateway/interface')
 
 //Logs
 const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
@@ -24,7 +23,7 @@ const financialController = {
             const partner = await Partner.findOne({_id: req.userId}, {_id: 0, createdAt: 0, junoAccount: 0, __v: 0})
             
             if(!partner) {
-                return res.status(404).json({message:"Partner not found"})
+                throw new Error("ERR005")
             }
 
             data = {
@@ -50,7 +49,9 @@ const financialController = {
 
             data.hasJunoAccount = true
 
-            await Partner.updateOne({_id: req.userId}, data)
+            await Partner.updateOne({_id: req.userId}, data, function(err) {
+                if(err) throw new Error('ERR004')
+            })
             
             Sentry.setContext("Create Digital Account", {
                 title: "Create Digital Account",
@@ -60,9 +61,9 @@ const financialController = {
             });
 
             return res.status(201).json({message: "Conta Digital criada!", data: data, error: false})
-        }catch(err){
-            Sentry.captureException(err);
-            res.status(400).json({err: err.stack, error: true})
+        }catch(e){
+            Sentry.captureException(e);
+            next(e)
         }finally{
             transaction.finish();
         }
@@ -71,8 +72,8 @@ const financialController = {
         try{
             let response = await gateway.getBanks()
             return res.status(200).json(response)
-        } catch(err){
-            return res.status(400).json(err)
+        } catch(e){
+            next(e)
         }
     },
     getBusiness: async (req, res, next) => {
@@ -80,7 +81,7 @@ const financialController = {
             let response = await gateway.getBusiness()
             return res.status(200).json(response)
         } catch(err){
-            return res.status(500).json(err)
+            next(e)
         }
     },
     getDocuments: async (req, res, next) => {
@@ -92,7 +93,7 @@ const financialController = {
             let response = await gateway.getDocuments(resourceToken)
             return res.status(200).json(response)
         } catch(err){
-            return res.status(400).json(err)
+            next(e)
         }
     },
     getBalance: async (req, res, next) => {
@@ -104,7 +105,7 @@ const financialController = {
             const response = await gateway.getBalance(resourceToken)
             return res.status(200).json(response)
         } catch(err){
-            return res.status(400).json(err)
+            next(e)
         }
     }
 } 

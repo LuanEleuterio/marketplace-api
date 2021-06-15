@@ -4,23 +4,23 @@ module.exports = (req, res, next) => {
     const authHeader = req.headers.authorization
 
     if(!authHeader){
-        res.status(401).send({error: 'No token provided'})
+        throw new Error('ERR027')
     }
 
     const parts = authHeader.split(' ')
     
     if(!parts.length === 2){
-        res.status(401).send({error: 'Token error'})
+        throw new Error('ERR028')
     }
 
     const [ bearer , token ] = parts
 
     if(!/^Bearer$/i.test(bearer)){
-        res.status(401).send({error: 'Token malformatted'})
+        throw new Error('ERR029')
     }
 
     jwt.verify(token, process.env.SECRET_WORD, (error, decoded) => {
-        if(error) return res.status(401).send({error: "Token invalid"})
+        if(error) throw new Error('ERR030')
 
         req.userId = decoded.id
         req.userOrPartner = decoded.userOrPartner

@@ -77,6 +77,17 @@ const partnerController = {
         }catch(e){
             next(e)
         }
+    },
+    listAll: async (req, res, next) => {
+        try{
+            const partner = await Partner.find(null, {_id: 1, active: 1})
+
+            if(!partner) throw new Error("ERR005")
+
+            res.status(200).json({partner, error: false})
+        }catch(e){
+            next(e)
+        }
     }
 }
 

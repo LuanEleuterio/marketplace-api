@@ -79,6 +79,17 @@ const userController = {
         } catch(e) {
             next(e)
         }
+    },
+    listAll: async (req, res, next) => {
+        try {
+            const user = await User.find(null, {_id: 1, active: 1});
+
+            if(!user) throw new Error("ERR005")
+
+            res.status(200).json({ user, error: false });
+        } catch(e) {
+            next(e)
+        }
     }
 };
 

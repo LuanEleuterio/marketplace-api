@@ -35,7 +35,10 @@ const orderController = {
             }
 
             const orderId = await orderHelper.createOrder()
+
             const user = await User.findOne({_id: req.userId})
+
+            if(!user) throw new Error("ERR005")
 
             Sentry.setContext("Order Created", {
                 title: "Order Created",
@@ -63,6 +66,8 @@ const orderController = {
                 }
 
                 const charge = await Charge.create(response)
+
+                if(!charge) throw new Error("ERR015")
 
                 Sentry.setExtra("Charge Created", {
                     title: "Charge Created",
@@ -113,10 +118,9 @@ const orderController = {
                 })
             }
             return res.status(201).json({message: "Pedido realizado!", orderId, error: false})
-        } catch(err){
-            Sentry.captureException(err);
-            await Order.deleteOne({_id: orderId})
-            res.status(400).json({err: err.stack, message: "Não foi possível realizar o pedido!", error: true })
+        } catch(e){
+            Sentry.captureException(e);
+            next(e)
         }finally{
             transaction.finish();
         }
@@ -134,6 +138,8 @@ const orderController = {
                 .populate('details.payment')
                 .populate('details.charge')
                 .populate('details.partner')
+
+            if(!order) throw new Error("ERR014")
             
             const data = {
                 split: [
@@ -161,9 +167,6 @@ const orderController = {
             await Orders.updateOne({_id: req.body.orderId, details: {$elemMatch: {_id: req.body.itemId}}},
                 {$set: {'details.$.status': "CANCELED",}});
             
-            console.log(order.details[0]._id)
-            console.log(order.details[0]._id.toString())
-
             Sentry.setContext("Item Order Canceled", {
                 title: "Item Order Canceled",
                 stage: "1",
@@ -175,9 +178,9 @@ const orderController = {
             });
 
             res.status(200).json({message:"Item cancelado!", error: false})
-        }catch(err){
-            Sentry.captureException(err);
-            res.status(400).json({err: err.stack, message: "Problema ao cancelar o pedido!", error: true })
+        }catch(e){
+            Sentry.captureException(e);
+            next(e)
         }finally{
             transaction.finish();
         }
@@ -191,10 +194,12 @@ const orderController = {
             .populate("details.charge")
             .populate("details.partner", {name: 1})
             .populate("customer", {address: 1});
+
+            if(!orders) throw new Error('ERR014')
             
             return res.status(200).json({orders, error: false})
-        }catch(err){
-            return res.status(404).json({err: err.stack, message:"Pedidos não encontrados", error: true})
+        }catch(e){
+           next(e)
         }   
     },
     listByPartner: async (req, res, next) => {
@@ -207,6 +212,8 @@ const orderController = {
             .populate("details.charge")
             .populate("customer", {name: 1, address: 1, phone: 1, email: 1});
 
+            if(!orders) throw new Error('ERR014')
+
             for( let order of orders){
                 let newOrder = order.details.filter((detail) => {
                     return req.userId == detail.partner
@@ -214,10 +221,22 @@ const orderController = {
                 order.details = newOrder
             }
             return res.status(200).json({orders, error: false})
-        }catch(err){
-            return res.status(404).json({err: err.stack, message:"Pedidos não encontrados", error: true})
+        }catch(e){
+            next(e)
         }   
-    }
+    },
+    listAll: async (req, res, next) => {
+        try{
+            const orders = await Orders.find(null,{'details.product': 1, 'details.amount': 1})
+            .populate("details.product", {name: 1, price: 1})
+
+            if(!orders) throw new Error('ERR014')
+
+            return res.status(200).json({orders, error: false})
+        }catch(e){
+            next(e)
+        }   
+    },
 };
 
 module.exports = orderController;

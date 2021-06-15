@@ -6,4 +6,9 @@ const generateToken = (params) => {
     })
 }
 
-module.exports = generateToken
+const generateTokenAdm = (params) => {
+    return jwt.sign(params, process.env.SECRET_WORD)
+}
+
+
+module.exports = {generateToken, generateTokenAdm}

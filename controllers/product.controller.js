@@ -19,6 +19,11 @@ Sentry.init({
 
 const productController = {
     create: async (req, res, next) => {
+        const transaction = Sentry.startTransaction({
+            op: "Create Products",
+            name: "Criação de Produtos"
+        });
+
         try{   
             let fieldsMalformatted = productHelper.verifyFieldsBody(req.body)
             if(fieldsMalformatted.length > 0){
@@ -31,26 +36,62 @@ const productController = {
 
             if(!product) throw new Error('ERR006')
 
+            Sentry.setContext("Create Product", {
+                title: "Create Product",
+                stage: "1",
+                partnerId: req.userId,
+                payload: {
+                    product
+                },
+            });
+
             return res.status(201).json({message: "Product created!", product, error: false})
         } catch(e){
+            Sentry.captureException(e);
             next(e)
+        }finally{
+            transaction.finish();
         }
     },
 
     update: async (req, res, next) => {
         const data = req.body
+
+        const transaction = Sentry.startTransaction({
+            op: "Update Products",
+            name: "Atualizar de Produtos"
+        });
+
         try{
             data.updatedAt = Date.now()
             await Product.updateOne({_id: data.productId}, data, function(err){
                 if(err) throw new Error("ERR007")
             })
+
+            Sentry.setContext("Update Product", {
+                title: "Update Product",
+                stage: "1",
+                partnerId: req.userId,
+                payload: {
+                    productId: data.productId
+                },
+            });
+
             return res.status(200).json({message:"Produto alterado", error: false})
         }catch(e){
+            Sentry.captureException(e);
             next(e)
+        }finally{
+            transaction.finish();
         }
     },
 
     delete: async (req, res, next) => {
+        const transaction = Sentry.startTransaction({
+            op: "Delete Products",
+            name: "Exclusão de Produtos"
+        });
+
         try{
             let hasProdInOrder = await Orders.findOne({'details.product': req.params.productId})
 
@@ -65,9 +106,20 @@ const productController = {
                 })
             }
 
+            Sentry.setContext("Delete Product", {
+                title: "Delete Product",
+                stage: "1",
+                partnerId: req.userId,
+                payload: {
+                    productId: req.params.productId
+                },
+            });
             return res.status(200).json({message:"Produto excluído", error: false})
         }catch(e){
+            Sentry.captureException(e);
             next(e)
+        }finally{
+            transaction.finish();
         }
     },
 

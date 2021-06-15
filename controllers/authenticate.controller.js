@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs")
-const generateToken = require('../core/generateToken')
+const {generateToken , generateTokenAdm} = require('../core/generateToken')
 const User = require('../models/user.model')
 const Partner = require('../models/partner.model')
 
@@ -16,17 +16,29 @@ const authenticateController = {
             }
             
             if(!user){
-                return res.status(404).json({message: 'User not found', error: true})
+                throw new Error('ERR005')
             }
             if(!await bcrypt.compare(password, user.password)){
-                return res.status(400).json({message: 'User or password incorret', error: true})
+                throw new Error('ERR026')
             }
 
             const token = await generateToken({id: user._id, userOrPartner: userOrPartner})
             
             res.status(200).json({userId: user._id, token, type: userOrPartner, error: false})
-        }catch(err){
-            res.status(400).json({error: err.stack})
+        }catch(e){
+            next(e)
+        }
+    },
+    getAuthAdm: async (req, res, next) => {
+        try{
+            console.log(req.body)
+            const {email, userOrPartner, otherInfo} = req.body
+
+            const token = await generateTokenAdm({email, userOrPartner, otherInfo})
+            
+            res.status(200).json({token})
+        }catch(e){
+            next(e)
         }
     }
 } 

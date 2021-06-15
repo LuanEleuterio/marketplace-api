@@ -9,174 +9,163 @@ const baseUrl = process.env.BASE_URL_GATEWAY
 
 const junoGateway = {
     getBanks: async () => {
-        try{
-            const token = await authHelper.get()
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['Authorization'] = `Bearer ${token}`
 
-            let request = await api("GET", baseUrl, "/data/banks", {}, config)
-            return request.data
-        } catch(err){
-            return err
-        }
+        let request = await api("GET", baseUrl, "/data/banks", {}, config)
+
+        if(request?.response?.status > 399) throw new Error('ERR022')
+
+        return request.data
     },
     getBusiness: async () => {
-        try{
-            const token = await authHelper.get()
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['Authorization'] = `Bearer ${token}`
 
-            let request = await api("GET", baseUrl, "/data/business-areas", {}, config)
-            return request.data
-        } catch(err){
-            return err
-        }
+        let request = await api("GET", baseUrl, "/data/business-areas", {}, config)
+
+        if(request?.response?.status > 399) throw new Error('ERR022')
+
+        return request.data
     },
     getBalance: async (resourceToken) => {      
-        try{
-            const token = await authHelper.get()
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = resourceToken
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = resourceToken
+        config['Authorization'] = `Bearer ${token}`
 
-            let request = await api("GET", baseUrl, "/balance", {}, config)
-            return request.data
-        } catch(err){
-            return err
-        }
+        let request = await api("GET", baseUrl, "/balance", {}, config)
+
+        if(request?.response?.status > 399) throw new Error('ERR022')
+
+        return request.data
     },
     getDocuments: async (resourceToken) => {
-        try{
-            const token = await authHelper.get()
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = resourceToken
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = resourceToken
+        config['Authorization'] = `Bearer ${token}`
 
-            let request = await api("GET", baseUrl, "/documents", {}, config)
-            return request.data
-        } catch(err){
-            return err
-        }
+        let request = await api("GET", baseUrl, "/documents", {}, config)
+
+        if(request?.response?.status > 399) throw new Error('ERR022')
+
+        return request.data
     },
     sendDocuments: async (documentId) => {
-        try{
-            const token = await authHelper.get()
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['Authorization'] = `Bearer ${token}`
 
-            let request = await api("POST", baseUrl, `/documents/${documentId}/files`, {}, config)
-            return request.data
-        } catch(err){
-            return err
-        }
+        let request = await api("POST", baseUrl, `/documents/${documentId}/files`, {}, config)
+
+        if(request?.response?.status > 399) throw new Error('ERR022')
+
+        return request.data
     },
     createAccount: async (data) =>{
-        try{
-            const token = await authHelper.get()
-        
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
     
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['Authorization'] = `Bearer ${token}`
+        
+        let request = await api("POST", baseUrl, "/digital-accounts", data, config)
 
-            let request = await api("POST", baseUrl, "/digital-accounts", data, config)
-            return request
-        } catch(err){
-            return err
-        }
+        if(request?.response?.status > 399) throw new Error('ERR018')
+
+        return request
     },
     createCharge: async (data) => {
-        try{
-            const token = await authHelper.get()
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-            config['Authorization'] = `Bearer ${token}`
-            
-            const chargeToApi = await financialHelper.formatToSendApi(data.user, data.partner, data.product, data.body)
-            const request = await api("POST", baseUrl, "/charges", chargeToApi, config)
-            const chargeToDB = await financialHelper.formatToSendDB(
-                data.user, data.product, data.body.paymentType, request.data._embedded.charges[0]
-            )
-            return chargeToDB
-        } catch(err){
-            return err
-        }
+        const token = await authHelper.get()
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['Authorization'] = `Bearer ${token}`
+        
+        const chargeToApi = await financialHelper.formatToSendApi(data.user, data.partner, data.product, data.body)
+        const request = await api("POST", baseUrl, "/charges", chargeToApi, config)
+
+        if(request?.response?.status > 399) throw new Error('ERR016')
+
+        const chargeToDB = await financialHelper.formatToSendDB(
+            data.user, data.product, data.body.paymentType, request.data._embedded.charges[0]
+        )
+        return chargeToDB
     },
     cancelCharge: async (chargeId) => {
-        try{
-            const token = await authHelper.get()
-        
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+    
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['Authorization'] = `Bearer ${token}`
 
-            const request = await api("PUT", baseUrl, `/charges/${chargeId}/cancelation`, {}, config)
-            if(request.status >= 400){
-                return request.data
-            }
-            return request
-        } catch(err){
-            return err
+        const request = await api("PUT", baseUrl, `/charges/${chargeId}/cancelation`, {}, config)
+        
+        if(request?.response?.status > 399){
+            throw new Error("ERR017")
         }
+        return request
     },
     sendPayment: async (data) => {      
-        try{
-            const token = await authHelper.get()
-        
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+    
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['Authorization'] = `Bearer ${token}`
 
-            const paymentDataToApi = await financialHelper.formatPayment(data.card, data.user, data.body.chargeId)
-            let request = await api("POST", baseUrl, "/payments", paymentDataToApi, config)
-            const paymentDataToDB = await financialHelper.formatPaymentToDB(request.data, data.user)
-            
-            return paymentDataToDB
-        } catch(err){
-            console.log(err)
-            return err
+        const paymentDataToApi = await financialHelper.formatPayment(data.card, data.user, data.body.chargeId)
+        let request = await api("POST", baseUrl, "/payments", paymentDataToApi, config)
+
+        if(request?.response?.status > 399){
+            throw new Error("ERR019")
         }
+
+        const paymentDataToDB = await financialHelper.formatPaymentToDB(request.data, data.user)
+        
+        return paymentDataToDB
     },
     cancelPayment: async (paymentId, body) =>{
+        const token = await authHelper.get()
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['Authorization'] = `Bearer ${token}`
         
-        try {
-            const token = await authHelper.get()
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-            config['Authorization'] = `Bearer ${token}`
-            
-            const request = await api("POST", baseUrl, `/payments/${paymentId}/refunds`, body, config)
-            return request.data
-        }catch(err){
-            return err.stack
+        const request = await api("POST", baseUrl, `/payments/${paymentId}/refunds`, body, config)
+        
+        if(request?.response?.status > 399){
+            throw new Error("ERR020")
         }
+
+        return request.data
     },
     cardTokenization: async (data) => {    
-        try{
-            const token = await authHelper.get()
-        
-            const config = {}
-            config['X-Api-Version'] = process.env.API_VERSION
-            config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
-            config['Authorization'] = `Bearer ${token}`
+        const token = await authHelper.get()
+    
+        const config = {}
+        config['X-Api-Version'] = process.env.API_VERSION
+        config['X-Resource-Token'] = process.env.PRIVATE_TOKEN
+        config['Authorization'] = `Bearer ${token}`
 
-            let request = await api("POST", baseUrl, "/credit-cards/tokenization", data, config)
-          
-            return request.data
-        } catch(err){
-            return err
+        let request = await api("POST", baseUrl, "/credit-cards/tokenization", data, config)
+                
+        if(request?.response?.status > 399){
+            throw new Error("ERR021")
         }
+
+        return request.data
     }
 } 
 

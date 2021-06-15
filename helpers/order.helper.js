@@ -5,8 +5,11 @@ const orderHelper = {
     createOrder: async () => {
         const data = {}
         data.status = 'PROCESSING'
-
+        
         const order = await Order.create(data)
+
+        if(!order) throw new Error("ERR010")
+
         return order._id
     },
     updateOrder: async (data) =>{ 
@@ -23,12 +26,12 @@ const orderHelper = {
         data?.amount    ? order.amount   = parseInt(data.amount)  : null
         data?.shippingValue ? order.shippingValue  = data.shippingValue : null
         order.updateAt = Date.now()
-        try{
-            await Order.updateOne({_id: data.orderId }, {$addToSet: {details: order}, customer: user.customer})
-            return
-        }catch(err){
-            return err
-        }
+
+        await Order.updateOne({_id: data.orderId }, {$addToSet: {details: order}, customer: user.customer},
+            function(err){
+                if(err) throw new Error("ERR012")
+        })
+        return
     }
 }
 
