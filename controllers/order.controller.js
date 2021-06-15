@@ -227,7 +227,7 @@ const orderController = {
     },
     listAll: async (req, res, next) => {
         try{
-            const orders = await Orders.find(null,{'details.product': 1, 'details.amount': 1})
+            const orders = await Orders.find(null,{'createdAt': 1, 'details.product': 1, 'details.amount': 1})
             .populate("details.product", {name: 1, price: 1})
 
             if(!orders) throw new Error('ERR014')

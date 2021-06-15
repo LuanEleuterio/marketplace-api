@@ -80,7 +80,7 @@ const partnerController = {
     },
     listAll: async (req, res, next) => {
         try{
-            const partner = await Partner.find(null, {_id: 1, active: 1})
+            const partner = await Partner.find(null, {_id: 1, active: 1, createdAt: 1})
 
             if(!partner) throw new Error("ERR005")
 

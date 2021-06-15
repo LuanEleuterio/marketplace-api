@@ -82,7 +82,7 @@ const userController = {
     },
     listAll: async (req, res, next) => {
         try {
-            const user = await User.find(null, {_id: 1, active: 1});
+            const user = await User.find(null, {_id: 1, active: 1, createdAt: 1});
 
             if(!user) throw new Error("ERR005")
 
