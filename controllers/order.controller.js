@@ -1,3 +1,5 @@
+const moment = require('moment')
+
 //Models
 const User = require("../models/user.model");
 const Charge = require("../models/charge.model");
@@ -15,7 +17,6 @@ const financialHelper = require('../helpers/financial.helper')
 
 //Logs
 const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
@@ -227,7 +228,9 @@ const orderController = {
     },
     listAll: async (req, res, next) => {
         try{
-            const orders = await Orders.find(null,{'createdAt': 1, 'details.product': 1, 'details.amount': 1})
+            const dateNow = moment().format('YYYY-MM-DD')
+
+            const orders = await Orders.find({date: dateNow},{'createdAt': 1, 'details.product': 1, 'details.amount': 1})
             .populate("details.product", {name: 1, price: 1})
 
             if(!orders) throw new Error('ERR014')
