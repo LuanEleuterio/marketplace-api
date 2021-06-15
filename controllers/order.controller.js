@@ -230,8 +230,9 @@ const orderController = {
         try{
             const dateNow = moment().format('YYYY-MM-DD')
 
-            const orders = await Orders.find({date: dateNow},{'createdAt': 1, 'details.product': 1, 'details.amount': 1})
-            .populate("details.product", {name: 1, price: 1})
+            const orders = await Orders.find({date: dateNow},
+                {'createdAt': 1, 'details.product': 1, 'details.amount': 1, 'details.status': 1})
+            .populate("details.product", {name: 1, price: 1,})
 
             if(!orders) throw new Error('ERR014')
 
