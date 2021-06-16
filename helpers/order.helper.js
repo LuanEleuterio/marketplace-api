@@ -1,4 +1,4 @@
-const moment = require('moment')
+const moment = require('moment-timezone')
 
 //Models
 const Order = require('../models/order.model')
