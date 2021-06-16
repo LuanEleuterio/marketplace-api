@@ -6,7 +6,7 @@ const Order = require('../models/order.model')
 const orderHelper = {
     createOrder: async () => {
         const data = {}
-        const dateNow = moment().format('YYYY-MM-DD')
+        const dateNow = moment().tz("America/Sao_Paulo").format('YYYY-MM-DD')
 
         data.status = 'PROCESSING'
         data.date = dateNow

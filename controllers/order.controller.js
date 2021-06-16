@@ -228,7 +228,7 @@ const orderController = {
     },
     listAll: async (req, res, next) => {
         try{
-            const dateNow = moment().format('YYYY-MM-DD')
+            const dateNow = moment().tz("America/Sao_Paulo").format('YYYY-MM-DD')
 
             const orders = await Orders.find({date: dateNow},
                 {'createdAt': 1, 'details.product': 1, 'details.amount': 1, 'details.status': 1})
