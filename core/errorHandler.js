@@ -236,6 +236,7 @@ module.exports = async (err, req, res, next) => {
         errorCode: err.message,
         details,
         path,
-        error
+        error,
+        timestamp: Date.now()
     })
 }
