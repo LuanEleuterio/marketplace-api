@@ -80,7 +80,7 @@ const junoGateway = {
         config['Authorization'] = `Bearer ${token}`
         
         let request = await api("POST", baseUrl, "/digital-accounts", data, config)
-
+        
         if(request?.response?.status > 399) throw new Error('ERR018')
 
         return request

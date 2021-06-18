@@ -49,6 +49,7 @@ const userController = {
 
             return res.status(201).json({cards: response, error: false})
         } catch(e){
+            console.log(e.stack)
             Sentry.captureException(e);
             next(e)
         }finally{

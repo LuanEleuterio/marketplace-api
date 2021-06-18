@@ -20,20 +20,26 @@ const financialController = {
         
         let data
         try{
-            const partner = await Partner.findOne({_id: req.userId}, {_id: 0, createdAt: 0, junoAccount: 0, __v: 0})
+            const partner = await Partner.findOne({_id: req.userId}, {createdAt: 0, junoAccount: 0, __v: 0})
             
             if(!partner) {
                 throw new Error("ERR005")
             }
+
+            let partnerId = partner._id
 
             data = {
                 type: "PAYMENT",
                 ...partner._doc,
                 ...req.body,
             }
-            
+            delete data._id
             delete data.signUpCompleted
             delete data.hasJunoAccount
+            delete data.active
+            delete data.deleted
+            delete data.updatedAt
+            delete data.deletedAt
 
             let request = await gateway.createAccount(data)
 
@@ -49,14 +55,12 @@ const financialController = {
 
             data.hasJunoAccount = true
 
-            await Partner.updateOne({_id: req.userId}, data, function(err) {
-                if(err) throw new Error('ERR004')
-            })
+            await Partner.updateOne({_id: req.userId}, data)
             
             Sentry.setContext("Create Digital Account", {
                 title: "Create Digital Account",
                 stage: "1",
-                partnerId: partner._id.toString(),
+                partnerId: partnerId,
                 payload: data.junoAccount,
             });
 

@@ -227,6 +227,13 @@ module.exports = async (err, req, res, next) => {
             path = req.path
             error = true
         break;
+        default:
+            err.message = 'ERR0032'
+            statusCode = 400
+            message = "Error inesperado, tente novamente"
+            status = "error"
+            path = req.path
+            error = true
     }
 
     res.status(statusCode).json({

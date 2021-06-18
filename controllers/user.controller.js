@@ -1,4 +1,4 @@
-const generateToken = require("../core/generateToken");
+const {generateToken} = require("../core/generateToken");
 
 //Models
 const User = require("../models/user.model");
@@ -8,7 +8,6 @@ const userHelper = require('../helpers/user.helper')
 
 //Logs
 const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
@@ -22,7 +21,7 @@ const userController = {
         });
         try {
             let fieldsMalformatted = await userHelper.verifyFieldsBody(req.body)
-
+            console.log("fieldsMalformatted",fieldsMalformatted)
             if(fieldsMalformatted.length > 0){
                 req.body.fieldsMalformatted = fieldsMalformatted
                 throw new Error('ERR001')
@@ -34,7 +33,7 @@ const userController = {
             }
 
             const user = await User.create(req.body);
-
+            console.log("user",user)
             if(!user) throw new Error("ERR003")
 
             Sentry.setContext("User Created", {
@@ -43,8 +42,8 @@ const userController = {
                 payload: user,
             });
 
-            const token = await generateToken({ id: user.id, userOrPartner: "USER"});
-
+            const token = await generateToken({ id: user._id, userOrPartner: "USER"});
+            console.log("token",token)
             await userHelper.sendEmailWelcome(req.body)
 
             return res.status(201).json({ userId: user._id, token, error: false, type: "USER"});

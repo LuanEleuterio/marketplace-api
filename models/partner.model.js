@@ -17,8 +17,7 @@ const PartnerSchema = new mongoose.Schema({
         required: true
     },
     document:{
-        type: String,
-        unique: true,
+        type: String
     },
     birthDate:{
         type: Date

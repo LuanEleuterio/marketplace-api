@@ -1,4 +1,4 @@
-const generateToken = require('../core/generateToken')
+const {generateToken} = require('../core/generateToken')
 
 //Models
 const Partner = require('../models/partner.model')
